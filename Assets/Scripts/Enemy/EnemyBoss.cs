@@ -4,9 +4,13 @@ using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(EnemyJumper))]
-public class EnemyBoss : MonoBehaviour, IDamageable
+public class EnemyBoss : DifficultyScaled, IDamageable
 {
     private enum State { Idle, Chase, Attack, Dead }
+
+    // Visión real = base x dificultad x sigilo (agachado ve menos lejos)
+    float VisionRange { get { return data.visionRange * Multiplier * EnemyUtils.StealthMultiplier; } }
+    int HitsToKill { get { return Mathf.Max(1, Mathf.CeilToInt(data.hitsToKill * Multiplier)); } }
 
     [SerializeField] private EnemyData data;
 
@@ -56,7 +60,7 @@ public class EnemyBoss : MonoBehaviour, IDamageable
 
     void Start()
     {
-        agent.speed = data.moveSpeed;
+        agent.speed = (data.moveSpeed * Multiplier);
         agent.acceleration = data.acceleration;
         agent.angularSpeed = data.angularSpeed;
         agent.stoppingDistance = data.attackRange * 0.8f;
@@ -104,7 +108,7 @@ public class EnemyBoss : MonoBehaviour, IDamageable
         // Su "visión" es un círculo enorme: apenas el player entra, no lo suelta más
         if (state == State.Idle)
         {
-            if (dist <= data.visionRange)
+            if (dist <= VisionRange)
             {
                 state = State.Chase;
                 nextBurstTime = Time.time + 1.5f;
@@ -136,7 +140,7 @@ public class EnemyBoss : MonoBehaviour, IDamageable
         if (state != State.Idle || circleObj == null || !circleObj.activeSelf) return;
 
         LayerMask mask = clipCircleByWalls ? obstacleMask : (LayerMask)0;
-        EnemyUtils.UpdateFan(transform, circleMesh, circleVerts, 360f, data.visionRange,
+        EnemyUtils.UpdateFan(transform, circleMesh, circleVerts, 360f, VisionRange,
                              circleSegments, eyeOffset, mask);
     }
 
@@ -189,7 +193,7 @@ public class EnemyBoss : MonoBehaviour, IDamageable
         Vector3 muzzle = transform.position + Vector3.up * eyeOffset + flat * transform.localScale.x;
         Vector3 dir = (EnemyUtils.PlayerCenter() - muzzle).normalized;
 
-        EnemyBullet.Spawn(data.bulletPrefab, muzzle, dir, data.bulletSpeed, data.bulletDamage,
+        EnemyBullet.Spawn(data.bulletPrefab, muzzle, dir, data.bulletSpeed, (data.bulletDamage * Multiplier),
                           bulletColor, transform);
     }
 
@@ -223,7 +227,7 @@ public class EnemyBoss : MonoBehaviour, IDamageable
         if (to.magnitude > data.attackRange * 1.3f) return;
         if (Vector3.Angle(transform.forward, to) > data.attackAngle * 0.5f) return;
 
-        float dmg = data.instantKill ? 99999f : data.attackDamage;
+        float dmg = data.instantKill ? 99999f : (data.attackDamage * Multiplier);
         Debug.Log($"{name} golpea al player (daño {dmg})");
 
         IDamageable target = player.GetComponentInParent<IDamageable>();
@@ -245,10 +249,10 @@ public class EnemyBoss : MonoBehaviour, IDamageable
         if (state == State.Dead) return;
 
         hits++;
-        Debug.Log($"Boss recibió un golpe ({hits}/{data.hitsToKill})");
+        Debug.Log($"Boss recibió un golpe ({hits}/{HitsToKill})");
         StartCoroutine(Flash());
 
-        if (hits >= data.hitsToKill) Die();
+        if (hits >= HitsToKill) Die();
     }
 
     IEnumerator Flash()
@@ -286,7 +290,7 @@ public class EnemyBoss : MonoBehaviour, IDamageable
         if (data == null) return;
 
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, data.visionRange);
+        Gizmos.DrawWireSphere(transform.position, VisionRange);
 
         Gizmos.color = Color.magenta;
         Gizmos.DrawWireSphere(transform.position, data.attackRange);

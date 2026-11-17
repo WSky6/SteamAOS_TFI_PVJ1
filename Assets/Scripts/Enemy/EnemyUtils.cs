@@ -20,6 +20,9 @@ public static class EnemyUtils
         }
     }
 
+    // Sigilo: 1 = de pie, menor a 1 = agachado (los enemigos ven menos lejos)
+    public static float StealthMultiplier { get { return PlayerCrouch.VisionMultiplier; } }
+
     // Centro del cuerpo del player (hacia ahí apuntan las balas y la visión)
     public static Vector3 PlayerCenter()
     {
