@@ -4,9 +4,12 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class EnemyMelee : MonoBehaviour, IDamageable
+public class EnemyMelee : DifficultyScaled, IDamageable
 {
     public enum State { Idle, Patrol, Chase, Attack, Dead }
+
+    // Visión real = base x dificultad x sigilo (agachado ve menos lejos)
+    float VisionRange { get { return data.visionRange * Multiplier * EnemyUtils.StealthMultiplier; } }
     static readonly List<EnemyMelee> allEnemies = new List<EnemyMelee>();
     static readonly RaycastHit[] hitBuffer = new RaycastHit[16];
 
@@ -85,8 +88,8 @@ public class EnemyMelee : MonoBehaviour, IDamageable
 
     void Start()
     {
-        health = data.maxHealth;
-        agent.speed = data.moveSpeed;
+        health = (data.maxHealth * Multiplier);
+        agent.speed = (data.moveSpeed * Multiplier);
         agent.acceleration = data.acceleration;
         agent.angularSpeed = data.angularSpeed;
         agent.stoppingDistance = data.attackRange * 0.8f;
@@ -177,7 +180,7 @@ public class EnemyMelee : MonoBehaviour, IDamageable
         if (state == State.Dead || coneObj == null) return;
 
         if (coneObj.activeSelf)
-            UpdateFan(coneMesh, coneVerts, data.visionAngle, data.visionRange, coneSegments);
+            UpdateFan(coneMesh, coneVerts, data.visionAngle, VisionRange, coneSegments);
         if (alertObj.activeSelf)
             UpdateFan(alertMesh, alertVerts, 360f, data.allyAlertRadius, alertSegments);
     }
@@ -566,7 +569,7 @@ public class EnemyMelee : MonoBehaviour, IDamageable
         if (agent != null && agent.enabled)
         {
             bool patrolling = state == State.Patrol;
-            agent.speed = patrolling ? data.moveSpeed * patrolSpeedMultiplier : data.moveSpeed;
+            agent.speed = patrolling ? (data.moveSpeed * Multiplier) * patrolSpeedMultiplier : (data.moveSpeed * Multiplier);
             agent.stoppingDistance = patrolling ? 0.1f : data.attackRange * 0.8f;
 
             // Si estaba parado esperando en un punto, que pueda perseguir
@@ -609,7 +612,7 @@ public class EnemyMelee : MonoBehaviour, IDamageable
 
     bool CanSeePlayer(float dist)
     {
-        if (dist > data.visionRange) return false;
+        if (dist > VisionRange) return false;
 
         // Si está muy cerca, lo detecta aunque esté de espaldas
         bool veryClose = dist <= data.attackRange * 2f;
@@ -790,7 +793,7 @@ public class EnemyMelee : MonoBehaviour, IDamageable
         if (to.magnitude > data.attackRange * 1.3f) return;                          // fuera de rango
         if (Vector3.Angle(transform.forward, to) > data.attackAngle * 0.5f) return;  // fuera del arco
 
-        float dmg = data.instantKill ? 99999f : data.attackDamage;
+        float dmg = data.instantKill ? 99999f : (data.attackDamage * Multiplier);
         Debug.Log($"{name} golpea al player (daño {dmg})");
 
         IDamageable target = player.GetComponentInParent<IDamageable>();
@@ -858,7 +861,7 @@ public class EnemyMelee : MonoBehaviour, IDamageable
 
         // Amarillo: rango de visión
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, data.visionRange);
+        Gizmos.DrawWireSphere(transform.position, VisionRange);
 
         // Azul: radio de alerta a aliados
         Gizmos.color = new Color(0.2f, 0.4f, 1f);
@@ -868,8 +871,8 @@ public class EnemyMelee : MonoBehaviour, IDamageable
         Gizmos.color = Color.cyan;
         Vector3 l = Quaternion.Euler(0, -data.visionAngle * 0.5f, 0) * transform.forward;
         Vector3 r = Quaternion.Euler(0, data.visionAngle * 0.5f, 0) * transform.forward;
-        Gizmos.DrawRay(transform.position, l * data.visionRange);
-        Gizmos.DrawRay(transform.position, r * data.visionRange);
+        Gizmos.DrawRay(transform.position, l * VisionRange);
+        Gizmos.DrawRay(transform.position, r * VisionRange);
 
         // Magenta: arco del golpe
         Gizmos.color = Color.magenta;

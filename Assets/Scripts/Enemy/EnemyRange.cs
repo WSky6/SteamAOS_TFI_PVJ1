@@ -1,9 +1,12 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EnemyRanged : MonoBehaviour, IDamageable
+public class EnemyRanged : DifficultyScaled, IDamageable
 {
     private enum State { Idle, Patrol, Alert, Dead }
+
+    // Visión real = base x dificultad x sigilo (agachado ve menos lejos)
+    float VisionRange { get { return data.visionRange * Multiplier * EnemyUtils.StealthMultiplier; } }
 
     [SerializeField] private EnemyData data;
 
@@ -74,7 +77,7 @@ public class EnemyRanged : MonoBehaviour, IDamageable
 
     void Start()
     {
-        health = data.maxHealth;
+        health = (data.maxHealth * Multiplier);
         baseRotation = transform.rotation;
         scanPhase = Random.Range(0f, 6.28f);
 
@@ -145,7 +148,7 @@ public class EnemyRanged : MonoBehaviour, IDamageable
     {
         if (state == State.Dead || coneObj == null) return;
 
-        EnemyUtils.UpdateFan(transform, coneMesh, coneVerts, data.visionAngle, data.visionRange,
+        EnemyUtils.UpdateFan(transform, coneMesh, coneVerts, data.visionAngle, VisionRange,
                              coneSegments, eyeOffset, obstacleMask);
     }
 
@@ -204,7 +207,7 @@ public class EnemyRanged : MonoBehaviour, IDamageable
 
     float PatrolSpeed()
     {
-        float baseSpeed = data.moveSpeed > 0f ? data.moveSpeed : 3.5f;
+        float baseSpeed = (data.moveSpeed * Multiplier) > 0f ? (data.moveSpeed * Multiplier) : 3.5f;
         return baseSpeed * patrolSpeedMultiplier;
     }
 
@@ -296,7 +299,7 @@ public class EnemyRanged : MonoBehaviour, IDamageable
 
     bool CanSeePlayer(float dist, bool useAngle)
     {
-        if (dist > data.visionRange) return false;
+        if (dist > VisionRange) return false;
 
         if (useAngle)
         {
@@ -358,7 +361,7 @@ public class EnemyRanged : MonoBehaviour, IDamageable
 
         Vector3 dir = (EnemyUtils.PlayerCenter() - muzzle).normalized;
 
-        EnemyBullet.Spawn(data.bulletPrefab, muzzle, dir, data.bulletSpeed, data.bulletDamage,
+        EnemyBullet.Spawn(data.bulletPrefab, muzzle, dir, data.bulletSpeed, (data.bulletDamage * Multiplier),
                           bulletColor, transform);
     }
 
@@ -394,7 +397,7 @@ public class EnemyRanged : MonoBehaviour, IDamageable
 
     // Para probar sin script de disparo: clic derecho en el título del componente (en Play)
     [ContextMenu("Test: recibir golpe")]
-    void TestHit() { TakeDamage(data.maxHealth); }
+    void TestHit() { TakeDamage((data.maxHealth * Multiplier)); }
 
     void DrawPatrolGizmos()
     {
@@ -424,12 +427,12 @@ public class EnemyRanged : MonoBehaviour, IDamageable
         if (data == null) return;
 
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, data.visionRange);
+        Gizmos.DrawWireSphere(transform.position, VisionRange);
 
         Gizmos.color = Color.cyan;
         Vector3 l = Quaternion.Euler(0, -data.visionAngle * 0.5f, 0) * transform.forward;
         Vector3 r = Quaternion.Euler(0, data.visionAngle * 0.5f, 0) * transform.forward;
-        Gizmos.DrawRay(transform.position, l * data.visionRange);
-        Gizmos.DrawRay(transform.position, r * data.visionRange);
+        Gizmos.DrawRay(transform.position, l * VisionRange);
+        Gizmos.DrawRay(transform.position, r * VisionRange);
     }
 }
