@@ -69,6 +69,8 @@ public class PlayerBullet : MonoBehaviour
             Vector3 normal = h.normal.sqrMagnitude > 0.01f ? h.normal : -transform.forward;
             Color c = d != null ? new Color(1f, 0.45f, 0.1f) : bulletColor;
             BulletImpact.Spawn(point, normal, c, d != null ? 22 : 16);
+            if (d != null) GameAudio.Play("hit_enemy", point, 0.9f);   // sonido: le pegó a un enemigo
+            else GameAudio.Play("impact_wall", point, 0.7f);           // sonido: pegó en una pared
 
             Destroy(gameObject); // pared o enemigo
             return;

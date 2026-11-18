@@ -156,6 +156,7 @@ public class EnemyRanged : DifficultyScaled, IDamageable
 
     void EnterAlert()
     {
+        GameAudio.Play("ranged_alert", transform.position, 0.9f);   // sonido al detectar al player
         state = State.Alert;
         lastSeenPos = player.position;
         alertUntil = Time.time + data.alertMemoryTime;
@@ -352,6 +353,7 @@ public class EnemyRanged : DifficultyScaled, IDamageable
     void Shoot()
     {
         nextShot = Time.time + data.shootInterval;
+        GameAudio.Play("ranged_shot", transform.position, 1f);   // sonido del disparo
 
         // La bala sale de la punta del palito acostado
         EnemyWeapon weapon = GetComponent<EnemyWeapon>();
@@ -382,11 +384,13 @@ public class EnemyRanged : DifficultyScaled, IDamageable
 
         health -= amount;
         if (health <= 0f) Die();
+        else GameAudio.Play("ranged_hurt", transform.position, 0.9f);
     }
 
     void Die()
     {
         state = State.Dead;
+        GameAudio.Play("ranged_die", transform.position, 1f);   // sonido de muerte
         if (coneObj != null) coneObj.SetActive(false);
         if (agent != null && agent.enabled) agent.enabled = false;
 

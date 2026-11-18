@@ -111,6 +111,7 @@ public class EnemyBoss : DifficultyScaled, IDamageable
             if (dist <= VisionRange)
             {
                 state = State.Chase;
+                GameAudio.Play("boss_alert", transform.position, 1f, 0.03f);   // rugido al detectar al player
                 nextBurstTime = Time.time + 1.5f;
                 if (circleObj != null) circleObj.SetActive(false);
             }
@@ -186,6 +187,7 @@ public class EnemyBoss : DifficultyScaled, IDamageable
 
     void FireBullet()
     {
+        GameAudio.Play("boss_shot", transform.position, 1f, 0.05f);   // sonido del disparo
         Vector3 flat = player.position - transform.position;
         flat.y = 0f;
         flat = flat.sqrMagnitude > 0.001f ? flat.normalized : transform.forward;
@@ -221,6 +223,8 @@ public class EnemyBoss : DifficultyScaled, IDamageable
     {
         if (state == State.Dead || player == null) return;
 
+        GameAudio.Play("boss_swing", transform.position, 1f, 0.05f);   // sonido del golpe
+
         Vector3 to = player.position - transform.position;
         to.y = 0f;
 
@@ -253,6 +257,7 @@ public class EnemyBoss : DifficultyScaled, IDamageable
         StartCoroutine(Flash());
 
         if (hits >= HitsToKill) Die();
+        else GameAudio.Play("boss_hurt", transform.position, 1f, 0.05f);
     }
 
     IEnumerator Flash()
@@ -268,6 +273,7 @@ public class EnemyBoss : DifficultyScaled, IDamageable
     void Die()
     {
         state = State.Dead;
+        GameAudio.Play("boss_die", transform.position, 1f, 0.03f);   // sonido de muerte
         CancelInvoke();
         StopAllCoroutines();
         jumper.StopJumping();

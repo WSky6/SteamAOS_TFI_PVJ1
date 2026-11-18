@@ -89,8 +89,16 @@ public class PlayerHealth : MonoBehaviour, IDamageable
             playerStats.maxHealth
         );
 
+        // Sonidos: muerte o quejido al recibir daño
         if (playerStats.currentHealth <= 0f)
+        {
+            GameAudio.Play2D("player_die", 1f);
             Die();
+        }
+        else
+        {
+            GameAudio.Play2D("player_hurt", 0.9f);
+        }
     }
 
     public void Heal(float amount)
