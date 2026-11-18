@@ -27,6 +27,7 @@ public class PlayerSetup : MonoBehaviour
                 if (p.GetComponent<PlayerHealth>() == null) p.AddComponent<PlayerHealth>();
                 if (p.GetComponent<PlayerDeathZones>() == null) p.AddComponent<PlayerDeathZones>();
                 if (p.GetComponent<PlayerCrouch>() == null) p.AddComponent<PlayerCrouch>();
+                if (p.GetComponent<PlayerFootsteps>() == null) p.AddComponent<PlayerFootsteps>();
             }
 
             yield return wait;

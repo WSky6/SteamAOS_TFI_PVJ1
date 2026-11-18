@@ -561,7 +561,12 @@ public class EnemyMelee : DifficultyScaled, IDamageable
 
     void SetState(State newState)
     {
+        State old = state;
         state = newState;
+
+        // Sonido al detectar al player (solo cuando pasa de calmado a perseguir)
+        if (state == State.Chase && (old == State.Idle || old == State.Patrol))
+            GameAudio.Play("melee_alert", transform.position, 1f);
 
         if (state == State.Chase) ResetStuckTimer();
 
@@ -787,6 +792,8 @@ public class EnemyMelee : DifficultyScaled, IDamageable
     {
         if (state == State.Dead || player == null) return;
 
+        GameAudio.Play("melee_swing", transform.position, 1f);   // sonido del golpe
+
         Vector3 to = player.position - transform.position;
         to.y = 0f;
 
@@ -816,11 +823,13 @@ public class EnemyMelee : DifficultyScaled, IDamageable
 
         health -= amount;
         if (health <= 0f) Die();
+        else GameAudio.Play("melee_hurt", transform.position, 0.9f);
     }
 
     void Die()
     {
         SetState(State.Dead);
+        GameAudio.Play("melee_die", transform.position, 1f);   // sonido de muerte
         CancelInvoke();
         StopAllCoroutines();
         if (agent.enabled) agent.enabled = false;

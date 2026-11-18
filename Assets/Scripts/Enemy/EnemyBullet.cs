@@ -106,6 +106,7 @@ public class EnemyBullet : MonoBehaviour
             Vector3 normal = h.normal.sqrMagnitude > 0.01f ? h.normal : -transform.forward;
             BulletImpact.Spawn(point, normal, hitPlayer ? new Color(1f, 0.2f, 0.2f) : impactColor,
                                hitPlayer ? 22 : 16);
+            if (!hitPlayer) GameAudio.Play("impact_wall", point, 0.6f);   // sonido: la bala pegó en una pared
 
             Destroy(gameObject); // pared o player
             return;

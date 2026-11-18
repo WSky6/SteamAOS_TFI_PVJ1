@@ -66,10 +66,7 @@ public class UIManager : MonoBehaviour
             subscribed = true;
             Debug.Log("UIManager suscrito a GameManager2 en " + SceneManager.GetActiveScene().name);
         }
-        else
-        {
-            Debug.LogWarning("UIManager: GameManager2.Instance es null, no se pudo suscribir");
-        }
+        // En el MainMenu no hay GameManager: es normal, no se muestra ningún aviso
 
         if (healthSystemPlayer != null)
             healthSystemPlayer.OnHealthChanged += UpdateBar;

@@ -97,6 +97,7 @@ public class PlayerWeapon : MonoBehaviour
         reloading = true;
         reloadStart = Time.time;
         OnReloadStarted?.Invoke();
+        GameAudio.Play2D("reload_start", 0.8f);   // sonido: sacar el cargador
     }
 
     void FinishReload()
@@ -104,6 +105,7 @@ public class PlayerWeapon : MonoBehaviour
         reloading = false;
         SetAmmo(magazineSize);
         OnReloadFinished?.Invoke();
+        GameAudio.Play2D("reload_end", 0.8f);     // sonido: cargador puesto
     }
 
     void Update()
@@ -158,6 +160,7 @@ public class PlayerWeapon : MonoBehaviour
         // ---------------- DISPARO ----------------
         bool click = Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
         if (click && !reloading && ammo > 0 && Time.time >= nextFire) Fire();
+        else if (click && (reloading || ammo <= 0)) GameAudio.Play2D("player_empty", 0.7f);   // clic sin balas
     }
 
     Camera FindCamera()
@@ -205,6 +208,7 @@ public class PlayerWeapon : MonoBehaviour
         nextFire = Time.time + fireCooldown;
         recoilUntil = Time.time + 0.08f;
         SetAmmo(ammo - 1);
+        GameAudio.Play2D("player_shot", 0.9f);    // sonido del disparo
 
         Vector3 origin = cam.transform.position;
         Vector3 camDir = cam.transform.forward;

@@ -8,13 +8,16 @@ using UnityEngine.UI;
 // Al elegir una dificultad se guarda (DifficultyScaled.SetDifficulty) y se carga el primer nivel.
 // El panel se crea solo por código: no hay que armar nada más en Unity.
 [RequireComponent(typeof(Button))]
+[DisallowMultipleComponent]
 public class DifficultyMenu : MonoBehaviour
 {
     [SerializeField] string firstScene = "Nivel1";
 
     static readonly string[] names = { "Fácil", "Normal", "Difícil" };
 
-    GameObject panel;
+    // Compartido: aunque haya dos copias del script, el panel se crea una sola vez
+    static GameObject panel;
+    GameObject mainPanel;   // el panel del menú principal (Main_Panel), se oculta como hace Opciones
     Font font;
 
     void Awake()
@@ -27,17 +30,22 @@ public class DifficultyMenu : MonoBehaviour
             play.onClick.SetPersistentListenerState(i, UnityEventCallState.Off);
 
         play.onClick.AddListener(Open);
+
+        // El botón Play está dentro de Main_Panel: ese es el que hay que ocultar
+        mainPanel = transform.parent != null ? transform.parent.gameObject : null;
     }
 
     public void Open()
     {
         if (panel == null) BuildPanel();
+        if (mainPanel != null) mainPanel.SetActive(false);
         panel.SetActive(true);
     }
 
     void Close()
     {
         if (panel != null) panel.SetActive(false);
+        if (mainPanel != null) mainPanel.SetActive(true);
     }
 
     void Choose(int index)
@@ -60,21 +68,25 @@ public class DifficultyMenu : MonoBehaviour
         CanvasScaler scaler = canvasGo.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = 1f;   // se ajusta al alto: entra en cualquier pantalla
         canvasGo.AddComponent<GraphicRaycaster>();
         panel = canvasGo;
 
-        // Fondo oscuro que tapa el menú
-        Image bg = NewImage("Fondo", canvasGo.transform, new Color(0f, 0f, 0f, 0.85f));
+        // Fondo transparente: se ve la imagen del menú, igual que en Opciones
+        Image bg = NewImage("Fondo", canvasGo.transform, new Color(0f, 0f, 0f, 0f));
+        bg.raycastTarget = false;
         Stretch(bg.rectTransform);
 
-        NewLabel("Titulo", bg.transform, "Elegí la dificultad", 60, new Vector2(0, 280), new Vector2(900, 100));
+        Text title = NewLabel("Titulo", bg.transform, "DIFICULTAD", 90, new Vector2(0, 380), new Vector2(1200, 140));
+        title.fontStyle = FontStyle.Bold;
 
         int current = DifficultyScaled.CurrentIndex;
         for (int i = 0; i < names.Length; i++)
         {
             int index = i;
             string text = names[i] + (i == current ? "  (última elegida)" : "");
-            NewButton(text, bg.transform, new Vector2(0, 130 - i * 130), () => Choose(index));
+            NewButton(text, bg.transform, new Vector2(0, 160 - i * 120), () => Choose(index));
         }
 
         NewButton("Atrás", bg.transform, new Vector2(0, -290), Close);
@@ -118,7 +130,7 @@ public class DifficultyMenu : MonoBehaviour
         Image img = NewImage("Btn " + text, parent, new Color(0.95f, 0.95f, 0.95f, 1f));
         RectTransform rt = img.rectTransform;
         rt.anchoredPosition = pos;
-        rt.sizeDelta = new Vector2(600, 100);
+        rt.sizeDelta = new Vector2(600, 90);
 
         Button b = img.gameObject.AddComponent<Button>();
         b.targetGraphic = img;
