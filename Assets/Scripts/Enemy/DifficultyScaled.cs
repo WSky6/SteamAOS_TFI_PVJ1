@@ -25,7 +25,7 @@ public abstract class DifficultyScaled : MonoBehaviour
     [SerializeField]
     protected DifficultyLevel[] niveles =
     {
-        new DifficultyLevel("Facil",   0.75f),
+        new DifficultyLevel("Facil",   0.50f),
         new DifficultyLevel("Normal",  1.00f),
         new DifficultyLevel("Dificil", 1.50f),
     };

@@ -83,6 +83,8 @@ namespace StarterAssets
 		private float _jumpTimeoutDelta;
 		private float _fallTimeoutDelta;
 
+		public bool IsDashing { get; private set; }
+
 	
 #if ENABLE_INPUT_SYSTEM
 		private PlayerInput _playerInput;
@@ -102,6 +104,17 @@ namespace StarterAssets
 				#else
 				return false;
 				#endif
+			}
+		}
+
+		public void SetDashing(bool value)
+		{
+			IsDashing = value;
+			if (value)
+			{
+				// Cancelamos la caída y los empujes del wall jump para que el dash sea limpio
+				_verticalVelocity = 0f;
+				_wallJumpPush = Vector3.zero;
 			}
 		}
 
@@ -132,6 +145,7 @@ namespace StarterAssets
 		private void Update()
 		{
 			GroundedCheck();
+			if (IsDashing) return;
 			WallCheck();
 			JumpAndGravity();
 			Move();
