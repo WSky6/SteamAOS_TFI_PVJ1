@@ -800,7 +800,7 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         if (to.magnitude > data.attackRange * 1.3f) return;                          // fuera de rango
         if (Vector3.Angle(transform.forward, to) > data.attackAngle * 0.5f) return;  // fuera del arco
 
-        float dmg = data.instantKill ? 99999f : (data.attackDamage * Multiplier);
+        float dmg = data.instantKill ? 50f : (data.attackDamage * Multiplier);
         Debug.Log($"{name} golpea al player (daño {dmg})");
 
         IDamageable target = player.GetComponentInParent<IDamageable>();

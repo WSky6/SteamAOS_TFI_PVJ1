@@ -67,9 +67,16 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     }
 
     // Lo llaman las balas enemigas: saca 1/3 de la vida (shotsToDie disparos y muere)
-    public void TakeShot()
+    public void TakeShot(float damage = -1f)
     {
-        TakeDamage(playerStats.maxHealth / Mathf.Max(1, shotsToDie) + 0.01f);
+        if (damage >= 0f)
+        {
+            TakeDamage(damage);
+        }
+        else
+        {
+            TakeDamage(playerStats.maxHealth / Mathf.Max(1, shotsToDie) + 0.01f);
+        }
     }
     // Daño genérico (IDamageable): lo usan los golpes melee y las zonas de muerte
     public void TakeDamage(float amount)
