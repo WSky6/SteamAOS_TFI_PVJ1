@@ -22,6 +22,9 @@ using UnityEngine.InputSystem;
 // ============================================================================
 public class PlayerWeapon : MonoBehaviour
 {
+    [Header("Datos del arma (ScriptableObject)")]
+    [SerializeField] private WeaponData data;   // vacío = se carga Resources/Weapons/PlayerPistol
+
     [Header("Disparo")]
     [SerializeField] private float damage = 25f;
     [SerializeField] private float bulletSpeed = 40f;
@@ -74,8 +77,25 @@ public class PlayerWeapon : MonoBehaviour
     public event System.Action OnReloadStarted;
     public event System.Action OnReloadFinished;
 
+    // Copia los datos del ScriptableObject (WeaponData). Si no hay asset, se usan los valores de abajo.
+    void ApplyData()
+    {
+        if (data == null) data = Resources.Load<WeaponData>("Weapons/PlayerPistol");
+        if (data == null) return;
+
+        damage = data.damage;
+        bulletSpeed = data.bulletSpeed;
+        fireCooldown = data.fireCooldown;
+        magazineSize = data.magazineSize;
+        reloadTime = data.reloadTime;
+        bulletColor = data.bulletColor;
+        stickColor = data.stickColor;
+        tipColor = data.tipColor;
+    }
+
     void Awake()
     {
+        ApplyData();
         ammo = magazineSize;
     }
 
@@ -208,7 +228,7 @@ public class PlayerWeapon : MonoBehaviour
         nextFire = Time.time + fireCooldown;
         recoilUntil = Time.time + 0.08f;
         SetAmmo(ammo - 1);
-        GameAudio.Play2D("player_shot", 0.9f);    // sonido del disparo
+        GameAudio.Play2D(data != null ? data.shotSound : "player_shot", 0.9f);    // sonido del disparo
 
         Vector3 origin = cam.transform.position;
         Vector3 camDir = cam.transform.forward;

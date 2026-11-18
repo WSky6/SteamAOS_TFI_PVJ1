@@ -9,7 +9,11 @@ public class EnemyBoss : DifficultyScaled, IDamageable
     private enum State { Idle, Chase, Attack, Dead }
 
     // Visión real = base x dificultad x sigilo (agachado ve menos lejos)
-    float VisionRange { get { return data.visionRange * Multiplier * EnemyUtils.StealthMultiplier; } }
+    // Detección del boss: rango mínimo, fijo (no depende de EnemyData ni de la dificultad).
+    // Solo te detecta si estás cerca Y te ve (sin paredes en el medio). Agacharse lo reduce más.
+    [Header("Detección")]
+    [SerializeField] private float bossDetectionRange = 15f;
+    float VisionRange { get { return bossDetectionRange * EnemyUtils.StealthMultiplier; } }
     int HitsToKill { get { return Mathf.Max(1, Mathf.CeilToInt(data.hitsToKill * Multiplier)); } }
 
     [SerializeField] private EnemyData data;
@@ -108,7 +112,8 @@ public class EnemyBoss : DifficultyScaled, IDamageable
         // Su "visión" es un círculo enorme: apenas el player entra, no lo suelta más
         if (state == State.Idle)
         {
-            if (dist <= VisionRange)
+            // Solo lo detecta si lo ve: no atraviesa paredes ni puertas
+            if (dist <= VisionRange && HasLineOfSight())
             {
                 state = State.Chase;
                 GameAudio.Play("boss_alert", transform.position, 1f, 0.03f);   // rugido al detectar al player
@@ -280,7 +285,8 @@ public class EnemyBoss : DifficultyScaled, IDamageable
         if (agent.enabled) agent.enabled = false;
         if (circleObj != null) circleObj.SetActive(false);
 
-        // TODO: avisar al GameManager para sumar los puntos
+        // Evento: murió un enemigo -> ScoreManager suma los puntos (EnemyData.points)
+        EnemyEvents.RaiseDied(data.points, transform.position);
         Debug.Log($"{name} murió (+{data.points} puntos)");
         Destroy(gameObject, 0.5f);
 

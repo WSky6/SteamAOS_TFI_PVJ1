@@ -169,6 +169,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 899d34dbb7388af8b9ad32ebbf8f9d60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBoss
+  niveles:
+  - dificultad: Facil
+    multiplicador: 0.5
+  - dificultad: Normal
+    multiplicador: 1
+  - dificultad: Dificil
+    multiplicador: 1.5
+  bossDetectionRange: 10
   data: {fileID: 11400000, guid: 0f8cac65b31a3b263b732e66cfd961b0, type: 2}
   obstacleMask:
     serializedVersion: 2

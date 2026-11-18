@@ -1704,6 +1704,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a19fb3932b9eb8498461f5e8a0b8ff3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
+  menuMusic: {fileID: 0}
+  gameMusic: {fileID: 0}
+  playingVolume: 1
+  pausedVolume: 0.3
+  tutorialVolume: 0.5
+  endVolume: 0.2
+  fadeSpeed: 2
 --- !u!4 &848548694
 Transform:
   m_ObjectHideFlags: 0
@@ -2463,6 +2470,7 @@ GameObject:
   - component: {fileID: 1294087430}
   - component: {fileID: 1294087429}
   - component: {fileID: 1294087428}
+  - component: {fileID: 1294087431}
   m_Layer: 5
   m_Name: Opciones
   m_TagString: Untagged
@@ -2596,6 +2604,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1294087426}
   m_CullTransparentMesh: 1
+--- !u!114 &1294087431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1294087426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0d0cccce7912f231b1d22830ce09d76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OptionsMenu
 --- !u!1 &1452926488
 GameObject:
   m_ObjectHideFlags: 0

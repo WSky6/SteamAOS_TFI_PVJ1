@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using StarterAssets;
 
-// Sigilo: mantener CTRL (o C) para agacharse.
+// Sigilo: mantener C para agacharse (CTRL izquierdo es el dash).
 // Agachado: el jugador es más bajo, más lento y los enemigos lo ven de menos lejos.
 [RequireComponent(typeof(CharacterController))]
 public class PlayerCrouch : MonoBehaviour
@@ -49,8 +49,8 @@ public class PlayerCrouch : MonoBehaviour
 
     void Update()
     {
-        bool wantCrouch = Keyboard.current != null &&
-            (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.cKey.isPressed);
+        // Se agacha con C (Ctrl izquierdo quedó libre para el dash)
+        bool wantCrouch = Keyboard.current != null && Keyboard.current.cKey.isPressed;
 
         // Si quiere pararse pero hay techo encima, sigue agachado
         if (!wantCrouch && IsCrouching && !CanStandUp()) wantCrouch = true;

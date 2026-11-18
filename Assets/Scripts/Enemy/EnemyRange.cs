@@ -5,8 +5,8 @@ public class EnemyRanged : DifficultyScaled, IDamageable
 {
     private enum State { Idle, Patrol, Alert, Dead }
 
-    // Visión real = base x dificultad x sigilo (agachado ve menos lejos)
-    float VisionRange { get { return data.visionRange * Multiplier * EnemyUtils.StealthMultiplier; } }
+    // Visión real = la de EnemyData x sigilo (agachado ve menos lejos). La dificultad NO agranda la visión.
+    float VisionRange { get { return data.visionRange * EnemyUtils.StealthMultiplier; } }
 
     [SerializeField] private EnemyData data;
 
@@ -394,7 +394,8 @@ public class EnemyRanged : DifficultyScaled, IDamageable
         if (coneObj != null) coneObj.SetActive(false);
         if (agent != null && agent.enabled) agent.enabled = false;
 
-        // TODO: avisar al GameManager para sumar los puntos
+        // Evento: murió un enemigo -> ScoreManager suma los puntos (EnemyData.points)
+        EnemyEvents.RaiseDied(data.points, transform.position);
         Debug.Log($"{name} murió (+{data.points} puntos)");
         Destroy(gameObject, 0.5f);
     }

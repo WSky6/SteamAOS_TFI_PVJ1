@@ -35,6 +35,7 @@ public class PlayerFootsteps : MonoBehaviour
         source = gameObject.AddComponent<AudioSource>();
         source.playOnAwake = false;
         source.spatialBlend = 0f;   // sonido 2D: se escucha igual en cualquier lado
+        source.outputAudioMixerGroup = GameMixer.SfxGroup;   // canal SFX del mixer
 
         if (walkClips == null || walkClips.Length == 0)
             walkClips = Filter("footstep_walk");

@@ -33,6 +33,16 @@ public static class GameAudio
         s.PlayOneShot(clip, vol);
     }
 
+    // Prueba de volumen (slider de Efectos): suena aunque el juego esté en pausa
+    public static void Preview(string name, float volume = 0.7f)
+    {
+        AudioSource s = Prepare(name, volume, 0.03f, out AudioClip clip, out float vol, true);
+        if (s == null) return;
+
+        s.spatialBlend = 0f;
+        s.PlayOneShot(clip, vol);
+    }
+
     public static void Play2D(string name, float volume = 1f, float pitchVariation = 0.05f)
     {
         AudioSource s = Prepare(name, volume, pitchVariation, out AudioClip clip, out float vol);
@@ -44,12 +54,12 @@ public static class GameAudio
 
     // ---------------- Interno ----------------
 
-    static AudioSource Prepare(string name, float volume, float pitchVariation, out AudioClip clip, out float vol)
+    static AudioSource Prepare(string name, float volume, float pitchVariation, out AudioClip clip, out float vol, bool ignorePause = false)
     {
         clip = null;
         vol = 0f;
 
-        if (Time.timeScale == 0f) { return null; }   // en pausa no suena nada
+        if (Time.timeScale == 0f && !ignorePause) { return null; }   // en pausa no suena nada
 
         LoadClips();
 
@@ -107,6 +117,7 @@ public static class GameAudio
                 go.transform.SetParent(host.transform, false);
                 pool[i] = go.AddComponent<AudioSource>();
                 pool[i].playOnAwake = false;
+                pool[i].outputAudioMixerGroup = GameMixer.SfxGroup;   // canal SFX del mixer
             }
         }
 

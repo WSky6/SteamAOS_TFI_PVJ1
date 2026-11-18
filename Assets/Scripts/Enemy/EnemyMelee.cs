@@ -8,8 +8,8 @@ public class EnemyMelee : DifficultyScaled, IDamageable
 {
     public enum State { Idle, Patrol, Chase, Attack, Dead }
 
-    // Visión real = base x dificultad x sigilo (agachado ve menos lejos)
-    float VisionRange { get { return data.visionRange * Multiplier * EnemyUtils.StealthMultiplier; } }
+    // Visión real = la de EnemyData x sigilo (agachado ve menos lejos). La dificultad NO agranda la visión.
+    float VisionRange { get { return data.visionRange * EnemyUtils.StealthMultiplier; } }
     static readonly List<EnemyMelee> allEnemies = new List<EnemyMelee>();
     static readonly RaycastHit[] hitBuffer = new RaycastHit[16];
 
@@ -800,7 +800,9 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         if (to.magnitude > data.attackRange * 1.3f) return;                          // fuera de rango
         if (Vector3.Angle(transform.forward, to) > data.attackAngle * 0.5f) return;  // fuera del arco
 
-        float dmg = data.instantKill ? 50f : (data.attackDamage * Multiplier);
+        // Daño base (50 si "instantKill" está marcado, si no el de EnemyData) x multiplicador de dificultad
+        float baseDmg = data.instantKill ? 50f : data.attackDamage;
+        float dmg = baseDmg * Multiplier;
         Debug.Log($"{name} golpea al player (daño {dmg})");
 
         IDamageable target = player.GetComponentInParent<IDamageable>();
@@ -834,7 +836,8 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         StopAllCoroutines();
         if (agent.enabled) agent.enabled = false;
 
-        // TODO: avisar al GameManager para sumar los puntos
+        // Evento: murió un enemigo -> ScoreManager suma los puntos (EnemyData.points)
+        EnemyEvents.RaiseDied(data.points, transform.position);
         Debug.Log($"{name} murió (+{data.points} puntos)");
         Destroy(gameObject, 0.5f);
     }
