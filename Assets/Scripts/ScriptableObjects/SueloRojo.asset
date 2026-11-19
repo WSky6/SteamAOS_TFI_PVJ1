@@ -12,4 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 474178d389149004086ac1233b6b8397, type: 3}
   m_Name: SueloRojo
   m_EditorClassIdentifier: Assembly-CSharp::TutorialHint
-  hintText: Cuidado! El area roja te matara si la tocas!
+  hintText: 'Cuidado! El area roja te matara si la tocas!
+
+
+    Puedes hacer un dash
+    con la tecla "Control Izq." usala con cuidado!!'

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using StarterAssets;
 
 public class PlayerSetup : MonoBehaviour
 {
@@ -28,6 +29,7 @@ public class PlayerSetup : MonoBehaviour
                 if (p.GetComponent<PlayerDeathZones>() == null) p.AddComponent<PlayerDeathZones>();
                 if (p.GetComponent<PlayerCrouch>() == null) p.AddComponent<PlayerCrouch>();
                 if (p.GetComponent<PlayerFootsteps>() == null) p.AddComponent<PlayerFootsteps>();
+                if (p.GetComponent<PlayerDash>() == null) p.AddComponent<PlayerDash>();
             }
 
             yield return wait;

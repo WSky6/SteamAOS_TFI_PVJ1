@@ -18,6 +18,7 @@ public class TutorialTrigger : MonoBehaviour
             Debug.Log("Entró al trigger");
             uiManager.ShowHint(hint);
             GameManager.Instance.ChangeState(GameState.Tutorial);
+            activated = true;
         }
     }
 
