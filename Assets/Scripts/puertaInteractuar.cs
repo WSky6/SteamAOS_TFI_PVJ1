@@ -22,7 +22,6 @@ public class Door : MonoBehaviour, IInteractable
 
     private void Start()
     {
-        // Guardamos la posición local inicial
         startPosition = transform.localPosition;
     }
 
@@ -32,7 +31,6 @@ public class Door : MonoBehaviour, IInteractable
 
         if (isOpen)
         {
-            // Calculamos el desplazamiento hacia la izquierda (-X) respetando la rotación de la puerta
             Vector3 localOffset = Vector3.left * moveDistance;
             targetPosition = startPosition + (transform.localRotation * localOffset);
         }

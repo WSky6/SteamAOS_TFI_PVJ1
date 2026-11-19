@@ -8,9 +8,6 @@ public class EnemyBoss : DifficultyScaled, IDamageable
 {
     private enum State { Idle, Chase, Attack, Dead }
 
-    // Visión real = base x dificultad x sigilo (agachado ve menos lejos)
-    // Detección del boss: rango mínimo, fijo (no depende de EnemyData ni de la dificultad).
-    // Solo te detecta si estás cerca Y te ve (sin paredes en el medio). Agacharse lo reduce más.
     [Header("Detección")]
     [SerializeField] private float bossDetectionRange = 15f;
     float VisionRange { get { return bossDetectionRange * EnemyUtils.StealthMultiplier; } }
@@ -109,14 +106,12 @@ public class EnemyBoss : DifficultyScaled, IDamageable
 
         float dist = Vector3.Distance(transform.position, player.position);
 
-        // Su "visión" es un círculo enorme: apenas el player entra, no lo suelta más
         if (state == State.Idle)
         {
-            // Solo lo detecta si lo ve: no atraviesa paredes ni puertas
             if (dist <= VisionRange && HasLineOfSight())
             {
                 state = State.Chase;
-                GameAudio.Play("boss_alert", transform.position, 1f, 0.03f);   // rugido al detectar al player
+                GameAudio.Play("boss_alert", transform.position, 1f, 0.03f);
                 nextBurstTime = Time.time + 1.5f;
                 if (circleObj != null) circleObj.SetActive(false);
             }
@@ -125,7 +120,6 @@ public class EnemyBoss : DifficultyScaled, IDamageable
 
         if (state != State.Chase) return;
 
-        // Salto (obstáculos y atascos)
         jumper.Tick(dist);
         if (jumper.IsJumping) return;
 
@@ -150,8 +144,6 @@ public class EnemyBoss : DifficultyScaled, IDamageable
                              circleSegments, eyeOffset, mask);
     }
 
-    // ---------------- MOVIMIENTO ----------------
-
     void ChasePlayer()
     {
         if (!agent.isOnNavMesh) return;
@@ -165,8 +157,6 @@ public class EnemyBoss : DifficultyScaled, IDamageable
 
         agent.SetDestination(dest);
     }
-
-    // ---------------- DISPARO (ráfaga cuando está lejos) ----------------
 
     bool HasLineOfSight()
     {
@@ -192,7 +182,7 @@ public class EnemyBoss : DifficultyScaled, IDamageable
 
     void FireBullet()
     {
-        GameAudio.Play("boss_shot", transform.position, 1f, 0.05f);   // sonido del disparo
+        GameAudio.Play("boss_shot", transform.position, 1f, 0.05f);
         Vector3 flat = player.position - transform.position;
         flat.y = 0f;
         flat = flat.sqrMagnitude > 0.001f ? flat.normalized : transform.forward;
@@ -203,8 +193,6 @@ public class EnemyBoss : DifficultyScaled, IDamageable
         EnemyBullet.Spawn(data.bulletPrefab, muzzle, dir, data.bulletSpeed, (data.bulletDamage * Multiplier),
                           bulletColor, transform);
     }
-
-    // ---------------- ATAQUE CUERPO A CUERPO ----------------
 
     void StartAttack()
     {
@@ -217,7 +205,6 @@ public class EnemyBoss : DifficultyScaled, IDamageable
         dir.y = 0f;
         if (dir.sqrMagnitude > 0.001f) transform.rotation = Quaternion.LookRotation(dir);
 
-        // El palito hace el movimiento de golpe
         SendMessage("OnAttackStart", data.attackWindup, SendMessageOptions.DontRequireReceiver);
 
         Invoke(nameof(DealDamage), data.attackWindup);
@@ -228,7 +215,7 @@ public class EnemyBoss : DifficultyScaled, IDamageable
     {
         if (state == State.Dead || player == null) return;
 
-        GameAudio.Play("boss_swing", transform.position, 1f, 0.05f);   // sonido del golpe
+        GameAudio.Play("boss_swing", transform.position, 1f, 0.05f);
 
         Vector3 to = player.position - transform.position;
         to.y = 0f;
@@ -250,8 +237,6 @@ public class EnemyBoss : DifficultyScaled, IDamageable
         agent.isStopped = false;
         state = State.Chase;
     }
-
-    // ---------------- VIDA (aguanta N golpes) ----------------
 
     public void TakeDamage(float amount)
     {
@@ -278,14 +263,13 @@ public class EnemyBoss : DifficultyScaled, IDamageable
     void Die()
     {
         state = State.Dead;
-        GameAudio.Play("boss_die", transform.position, 1f, 0.03f);   // sonido de muerte
+        GameAudio.Play("boss_die", transform.position, 1f, 0.03f);
         CancelInvoke();
         StopAllCoroutines();
         jumper.StopJumping();
         if (agent.enabled) agent.enabled = false;
         if (circleObj != null) circleObj.SetActive(false);
 
-        // Evento: murió un enemigo -> ScoreManager suma los puntos (EnemyData.points)
         EnemyEvents.RaiseDied(data.points, transform.position);
         Debug.Log($"{name} murió (+{data.points} puntos)");
         Destroy(gameObject, 0.5f);
@@ -293,7 +277,6 @@ public class EnemyBoss : DifficultyScaled, IDamageable
         GameManager.Instance.ChangeState(GameState.Victory);
     }
 
-    // Para probar sin script de disparo: clic derecho en el título del componente (en Play)
     [ContextMenu("Test: recibir golpe")]
     void TestHit() { TakeDamage(1f); }
 

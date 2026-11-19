@@ -2,11 +2,6 @@ using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Contador de puntos. Escucha EnemyEvents.OnEnemyDied y suma los puntos de cada enemigo (EnemyData.points).
-// Se crea solo al iniciar el juego: no hay que ponerlo en ninguna escena.
-//
-// Para el HUD (compañero):  ScoreManager.OnScoreChanged += (puntos) => texto.text = puntos.ToString();
-//                           ScoreManager.Score   -> puntos actuales
 public class ScoreManager : MonoBehaviour
 {
     public static int Score { get; private set; }
@@ -50,7 +45,6 @@ public class ScoreManager : MonoBehaviour
         Score += points;
         Debug.Log("Puntos: " + Score + " (+" + points + ")");
 
-        // Se guarda también en PlayerStats (ScriptableObject del jugador)
         if (instance != null) instance.SaveToStats();
 
         OnScoreChanged?.Invoke(Score);
@@ -73,7 +67,6 @@ public class ScoreManager : MonoBehaviour
         if (stats != null) stats.currentScore = Score;
     }
 
-    // Al volver al menú principal se reinicia el puntaje
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name.Contains("Menu")) ResetScore();

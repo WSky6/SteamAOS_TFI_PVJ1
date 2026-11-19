@@ -1,6 +1,5 @@
 using UnityEngine;
 
-// Una dificultad = un nombre + un multiplicador de stats
 [System.Serializable]
 public struct DifficultyLevel
 {
@@ -14,13 +13,10 @@ public struct DifficultyLevel
     }
 }
 
-// Clase base: todo enemigo hereda de esta y obtiene el array [dificultad, multiplicador].
-// Se puede editar el array desde el Inspector de cada enemigo.
 public abstract class DifficultyScaled : MonoBehaviour
 {
     const string PrefKey = "Dificultad";
 
-    // Array heredado por todos los enemigos: [dificultad, multiplicador]
     [Header("Dificultad")]
     [SerializeField]
     protected DifficultyLevel[] niveles =
@@ -32,7 +28,6 @@ public abstract class DifficultyScaled : MonoBehaviour
 
     static int current = -1;
 
-    // Índice de la dificultad elegida (se guarda entre partidas)
     public static int CurrentIndex
     {
         get
@@ -42,14 +37,12 @@ public abstract class DifficultyScaled : MonoBehaviour
         }
     }
 
-    // Llamar desde el menú: DifficultyScaled.SetDifficulty(0) facil, 1 normal, 2 dificil
     public static void SetDifficulty(int index)
     {
         current = Mathf.Max(0, index);
         PlayerPrefs.SetInt(PrefKey, current);
     }
 
-    // Multiplicador que se aplica a vida, velocidad, daño y visión
     protected float Multiplier
     {
         get

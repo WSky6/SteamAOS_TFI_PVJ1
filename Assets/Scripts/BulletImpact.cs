@@ -1,6 +1,5 @@
 using UnityEngine;
 
-// Chispas de impacto de bala. Se crea por código, no necesita prefab.
 public static class BulletImpact
 {
     static Material material;
@@ -38,7 +37,6 @@ public static class BulletImpact
         shape.angle = 55f;
         shape.radius = 0.02f;
 
-        // Se desvanecen y se achican
         var col = ps.colorOverLifetime;
         col.enabled = true;
         Gradient g = new Gradient();

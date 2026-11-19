@@ -8,7 +8,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
 {
     public enum State { Idle, Patrol, Chase, Attack, Dead }
 
-    // Visión real = la de EnemyData x sigilo (agachado ve menos lejos). La dificultad NO agranda la visión.
     float VisionRange { get { return data.visionRange * EnemyUtils.StealthMultiplier; } }
     static readonly List<EnemyMelee> allEnemies = new List<EnemyMelee>();
     static readonly RaycastHit[] hitBuffer = new RaycastHit[16];
@@ -28,9 +27,9 @@ public class EnemyMelee : DifficultyScaled, IDamageable
     [SerializeField] private Transform[] patrolPoints;
     [Tooltip("Desactivado: recorre el circuito en bucle (A-B-C-A). Activado: va y vuelve (A-B-C-B-A).")]
     [SerializeField] private bool pingPong = false;
-    [SerializeField] private float waitAtPoint = 1.5f;                                // pausa en cada punto
-    [SerializeField, Range(0.1f, 1f)] private float patrolSpeedMultiplier = 0.5f;    // fracción de moveSpeed
-    [SerializeField] private float arriveThreshold = 0.5f;                            // distancia para dar el punto por alcanzado
+    [SerializeField] private float waitAtPoint = 1.5f;
+    [SerializeField, Range(0.1f, 1f)] private float patrolSpeedMultiplier = 0.5f;
+    [SerializeField] private float arriveThreshold = 0.5f;
 
     [Header("Visual")]
     [SerializeField] private Color bodyColor = Color.red;
@@ -47,24 +46,20 @@ public class EnemyMelee : DifficultyScaled, IDamageable
     private float nextAttackTime;
     private State state = State.Idle;
 
-    // Giro de cabeza
     private Quaternion baseRotation;
     private float scanPhase;
 
     private float nextRepath;
 
-    // Patrulla
     private int patrolIndex;
     private int patrolDir = 1;
     private bool waiting;
     private float waitStart, waitUntil;
 
-    // Salto
     private bool jumping;
     private float nextJumpTime;
     private NavMeshPath testPath;
 
-    // Atasco
     private Vector3 stuckLastPos;
     private float stuckNextCheck;
 
@@ -94,11 +89,9 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         agent.angularSpeed = data.angularSpeed;
         agent.stoppingDistance = data.attackRange * 0.8f;
 
-        // Evitar que se amontonen: cada uno tiene prioridad distinta
         agent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
         agent.avoidancePriority = Random.Range(30, 70);
 
-        // Si quedó un poco fuera del NavMesh, lo acomoda sobre el más cercano
         if (!agent.isOnNavMesh)
         {
             if (NavMesh.SamplePosition(transform.position, out NavMeshHit navHit, 3f, NavMesh.AllAreas))
@@ -108,7 +101,7 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         }
 
         baseRotation = transform.rotation;
-        scanPhase = Random.Range(0f, 6.28f); // para que no giren todos sincronizados
+        scanPhase = Random.Range(0f, 6.28f);
 
         RemoveOldVisuals();
         PaintBody();
@@ -116,7 +109,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         coneObj = CreateFan("VisionCone", coneYOffset, coneColor, coneSegments, out coneMesh, out coneVerts);
         alertObj = CreateFan("AlertArea", coneYOffset - 0.02f, alertColor, alertSegments, out alertMesh, out alertVerts);
 
-        // Con puntos de patrulla empieza patrullando; sin puntos, se queda quieto mirando (Idle)
         if (patrolPoints != null && patrolPoints.Length > 0)
         {
             SetState(State.Patrol);
@@ -185,15 +177,11 @@ public class EnemyMelee : DifficultyScaled, IDamageable
             UpdateFan(alertMesh, alertVerts, 360f, data.allyAlertRadius, alertSegments);
     }
 
-    // ---------------- MOVIMIENTO ----------------
-
-    // Gira de un lado a otro; el cono y la detección siguen hacia dónde mira
     void ScanHead()
     {
         ScanHeadAt(Time.time * data.headScanSpeed + scanPhase);
     }
 
-    // Igual que ScanHead pero con la fase del seno elegida (en patrulla empieza en 0 para no dar un salto)
     void ScanHeadAt(float phase)
     {
         if (data.headScanAngle <= 0f) return;
@@ -206,13 +194,11 @@ public class EnemyMelee : DifficultyScaled, IDamageable
     {
         if (!agent.isOnNavMesh) return;
 
-        // Actualiza el destino cada 0.1 s para evitar temblores
         if (Time.time < nextRepath) return;
         nextRepath = Time.time + 0.1f;
 
         Vector3 dest = player.position;
 
-        // Solo se separa un poco si hay otro enemigo pegado y todavía está lejos del player
         if (dist > data.attackRange * 3f)
             dest += GetLightSeparation();
 
@@ -224,7 +210,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         agent.SetDestination(dest);
     }
 
-    // Empuje suave: solo cuenta a los enemigos que están a menos de 1.5 m
     Vector3 GetLightSeparation()
     {
         const float closeDistance = 1.5f;
@@ -246,13 +231,10 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         return Vector3.ClampMagnitude(push, 1f) * 1.5f;
     }
 
-    // ---------------- PATRULLA ----------------
-
     void UpdatePatrol()
     {
         if (!agent.isOnNavMesh) return;
 
-        // Esperando en un punto: gira la cabeza de un lado a otro
         if (waiting)
         {
             ScanHeadAt((Time.time - waitStart) * data.headScanSpeed);
@@ -269,7 +251,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
 
         if (agent.pathPending) return;
 
-        // Punto inalcanzable: pasa al siguiente
         if (agent.pathStatus == NavMeshPathStatus.PathInvalid)
         {
             AdvancePatrolIndex();
@@ -277,12 +258,11 @@ public class EnemyMelee : DifficultyScaled, IDamageable
             return;
         }
 
-        // Llegó al punto: se detiene y espera
         if (agent.remainingDistance <= arriveThreshold)
         {
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
-            baseRotation = transform.rotation; // el giro de cabeza parte de hacia donde mira ahora
+            baseRotation = transform.rotation;
             waiting = true;
             waitStart = Time.time;
             waitUntil = Time.time + waitAtPoint;
@@ -320,9 +300,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         }
     }
 
-    // ---------------- ATASCO ----------------
-
-    // Si en stuckCheckTime segundos casi no se movió y está lejos del player, salta
     void CheckStuck(float dist)
     {
         if (!agent.isOnNavMesh || agent.isStopped)
@@ -351,7 +328,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         stuckNextCheck = Time.time + stuckCheckTime;
     }
 
-    // Salta hacia el player sin necesitar un obstáculo adelante
     void ForceJump()
     {
         Vector3 toPlayer = player.position - transform.position;
@@ -361,7 +337,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
 
         float[] angles = { 0f, 30f, -30f, 60f, -60f };
 
-        // Primero busca un aterrizaje conectado con el player; si no, uno cualquiera
         for (int pass = 0; pass < 2; pass++)
         {
             for (int i = 0; i < angles.Length; i++)
@@ -372,13 +347,10 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         }
     }
 
-    // ---------------- SALTO ----------------
-
-    // Salto normal: hay un obstáculo bajo adelante
     void TryJump(float dist)
     {
         if (Time.time < nextJumpTime || !agent.isOnNavMesh) return;
-        if (dist <= data.attackRange * 1.5f) return; // cerca del player no salta
+        if (dist <= data.attackRange * 1.5f) return;
 
         Vector3 dir = player.position - transform.position;
         dir.y = 0f;
@@ -389,17 +361,13 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         Vector3 lowOrigin = new Vector3(transform.position.x, footY + 0.3f, transform.position.z);
         Vector3 highOrigin = new Vector3(transform.position.x, footY + data.maxJumpHeight + 0.2f, transform.position.z);
 
-        // Tiene que haber un obstáculo bajo adelante...
         if (!ObstacleAhead(lowOrigin, dir, data.jumpTriggerDistance)) return;
 
-        // ...pero no tan alto que no se pueda saltar (una pared)
         if (ObstacleAhead(highOrigin, dir, data.jumpTriggerDistance + 0.5f)) return;
 
         TryJumpInDirection(dir, true);
     }
 
-    // Busca un aterrizaje lo más cerca posible del player en esa dirección y salta.
-    // Devuelve true si saltó.
     bool TryJumpInDirection(Vector3 dir, bool requirePathToPlayer)
     {
         float footY = transform.position.y - agent.baseOffset;
@@ -408,12 +376,10 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         bool havePlayerNav = NavMesh.SamplePosition(player.position, out NavMeshHit playerNav, 3f, NavMesh.AllAreas);
         if (requirePathToPlayer && !havePlayerNav) return false;
 
-        // Distancia horizontal hasta el player
         Vector3 toPlayer = player.position - transform.position;
         toPlayer.y = 0f;
         float distToPlayer = toPlayer.magnitude;
 
-        // Apunta a caer justo antes del player, sin pasarse del alcance del salto
         float maxD = Mathf.Min(data.jumpDistance, distToPlayer - data.attackRange * 0.8f);
         if (maxD < 1.5f) return false;
 
@@ -434,17 +400,14 @@ public class EnemyMelee : DifficultyScaled, IDamageable
             flatMove.y = 0f;
             if (flatMove.magnitude < d * 0.6f) continue;
 
-            // El aterrizaje tiene que estar conectado con el player
             if (requirePathToPlayer)
             {
                 if (!NavMesh.CalculatePath(nav.position, playerNav.position, NavMesh.AllAreas, testPath)) continue;
                 if (testPath.status != NavMeshPathStatus.PathComplete) continue;
             }
 
-            // Pared: algo más alto que lo que se puede saltar en el camino
             if (ObstacleAhead(highOrigin, flatMove.normalized, flatMove.magnitude)) continue;
 
-            // El arco del salto no puede atravesar nada
             Vector3 startPos = transform.position;
             Vector3 endPos = nav.position + Vector3.up * agent.baseOffset;
             if (ArcBlocked(startPos, endPos)) continue;
@@ -457,7 +420,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         return false;
     }
 
-    // Revisa tramo por tramo que el arco no choque con nada
     bool ArcBlocked(Vector3 start, Vector3 end)
     {
         const int steps = 12;
@@ -528,7 +490,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
             Vector3 p = Vector3.Lerp(start, end, k);
             p.y += Mathf.Sin(k * Mathf.PI) * data.jumpArcHeight;
 
-            // Seguridad: si choca con algo, corta el salto ahí
             if (SegmentBlocked(transform.position, p))
             {
                 crashed = true;
@@ -541,7 +502,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
 
         if (crashed)
         {
-            // Aterriza en el NavMesh más cercano al punto donde chocó
             if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 4f, NavMesh.AllAreas))
                 landing = hit.position;
             else
@@ -552,43 +512,36 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         agent.enabled = true;
         agent.Warp(landing);
         agent.ResetPath();
-        nextRepath = 0f; // vuelve a perseguir de inmediato
+        nextRepath = 0f;
         ResetStuckTimer();
         jumping = false;
     }
-
-    // ---------------- ESTADOS ----------------
 
     void SetState(State newState)
     {
         State old = state;
         state = newState;
 
-        // Sonido al detectar al player (solo cuando pasa de calmado a perseguir)
         if (state == State.Chase && (old == State.Idle || old == State.Patrol))
             GameAudio.Play("melee_alert", transform.position, 1f);
 
         if (state == State.Chase) ResetStuckTimer();
 
-        // Patrullando camina más lento y se detiene justo sobre el punto (no a distancia de ataque)
         if (agent != null && agent.enabled)
         {
             bool patrolling = state == State.Patrol;
             agent.speed = patrolling ? (data.moveSpeed * Multiplier) * patrolSpeedMultiplier : (data.moveSpeed * Multiplier);
             agent.stoppingDistance = patrolling ? 0.1f : data.attackRange * 0.8f;
 
-            // Si estaba parado esperando en un punto, que pueda perseguir
             if (state == State.Chase && agent.isOnNavMesh) agent.isStopped = false;
         }
 
-        // El cono y el área de alerta se ven mientras no ha detectado al player
         bool unaware = state == State.Idle || state == State.Patrol;
         if (coneObj != null)  coneObj.SetActive(unaware);
         if (alertObj != null) alertObj.SetActive(unaware ||
                                   (showAlertAreaAlways && state != State.Dead));
     }
 
-    // Lo llama otro enemigo que ya vio al player
     public void Alert()
     {
         if (state == State.Idle || state == State.Patrol) SetState(State.Chase);
@@ -607,19 +560,16 @@ public class EnemyMelee : DifficultyScaled, IDamageable
             if (d > data.allyAlertRadius) continue;
 
             Vector3 to = other.transform.position + Vector3.up * eyeOffset;
-            if (BlockedByWall(from, to, other.transform)) continue; // hay una pared en el medio
+            if (BlockedByWall(from, to, other.transform)) continue;
 
             other.Alert();
         }
     }
 
-    // ---------------- PERCEPCIÓN ----------------
-
     bool CanSeePlayer(float dist)
     {
         if (dist > VisionRange) return false;
 
-        // Si está muy cerca, lo detecta aunque esté de espaldas
         bool veryClose = dist <= data.attackRange * 2f;
         if (!veryClose)
         {
@@ -634,13 +584,12 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         return !BlockedByWall(origin, target, player);
     }
 
-    // Devuelve true si el objeto debe ignorarse (no cuenta como pared)
     bool IsIgnored(Transform t, Transform target)
     {
         if (t == transform || t.IsChildOf(transform)) return true;
         if (target != null && (t == target || t.IsChildOf(target))) return true;
         if (player != null && (t == player || t.IsChildOf(player))) return true;
-        if (t.GetComponentInParent<EnemyMelee>() != null) return true; // otros enemigos no bloquean
+        if (t.GetComponentInParent<EnemyMelee>() != null) return true;
         return false;
     }
 
@@ -660,7 +609,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         return false;
     }
 
-    // Distancia hasta la primera pared en una dirección
     float WallDistance(Vector3 origin, Vector3 dir, float maxDist)
     {
         int count = Physics.RaycastNonAlloc(origin, dir, hitBuffer, maxDist,
@@ -675,8 +623,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         return best;
     }
 
-    // ---------------- VISUAL ----------------
-
     void PaintBody()
     {
         Renderer r = GetComponent<Renderer>();
@@ -684,7 +630,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         if (r != null) r.material.color = bodyColor;
     }
 
-    // Borra conos viejos que pudo copiar un duplicado
     void RemoveOldVisuals()
     {
         for (int i = transform.childCount - 1; i >= 0; i--)
@@ -695,7 +640,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         }
     }
 
-    // Ojo blanco en el frente: sirve para ver hacia dónde mira
     void CreateEye()
     {
         GameObject eye = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -742,7 +686,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         return go;
     }
 
-    // Dibuja un abanico recortado por las paredes
     void UpdateFan(Mesh mesh, Vector3[] verts, float angleSpan, float radius, int segments)
     {
         Vector3 eye = transform.position + Vector3.up * eyeOffset;
@@ -767,8 +710,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         mesh.RecalculateBounds();
     }
 
-    // ---------------- ATAQUE ----------------
-
     void StartAttack()
     {
         SetState(State.Attack);
@@ -776,12 +717,10 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         agent.velocity = Vector3.zero;
         nextAttackTime = Time.time + data.attackCooldown;
 
-        // Apunta al player una sola vez y después no gira: así se puede esquivar
         Vector3 dir = player.position - transform.position;
         dir.y = 0f;
         if (dir.sqrMagnitude > 0.001f) transform.rotation = Quaternion.LookRotation(dir);
 
-        // El palito hace el movimiento de golpe
         SendMessage("OnAttackStart", data.attackWindup, SendMessageOptions.DontRequireReceiver);
 
         Invoke(nameof(DealDamage), data.attackWindup);
@@ -792,15 +731,14 @@ public class EnemyMelee : DifficultyScaled, IDamageable
     {
         if (state == State.Dead || player == null) return;
 
-        GameAudio.Play("melee_swing", transform.position, 1f);   // sonido del golpe
+        GameAudio.Play("melee_swing", transform.position, 1f);
 
         Vector3 to = player.position - transform.position;
         to.y = 0f;
 
-        if (to.magnitude > data.attackRange * 1.3f) return;                          // fuera de rango
-        if (Vector3.Angle(transform.forward, to) > data.attackAngle * 0.5f) return;  // fuera del arco
+        if (to.magnitude > data.attackRange * 1.3f) return;
+        if (Vector3.Angle(transform.forward, to) > data.attackAngle * 0.5f) return;
 
-        // Daño base (50 si "instantKill" está marcado, si no el de EnemyData) x multiplicador de dificultad
         float baseDmg = data.instantKill ? 50f : data.attackDamage;
         float dmg = baseDmg * Multiplier;
         Debug.Log($"{name} golpea al player (daño {dmg})");
@@ -817,8 +755,6 @@ public class EnemyMelee : DifficultyScaled, IDamageable
         SetState(State.Chase);
     }
 
-    // ---------------- VIDA ----------------
-
     public void TakeDamage(float amount)
     {
         if (state == State.Dead) return;
@@ -831,18 +767,15 @@ public class EnemyMelee : DifficultyScaled, IDamageable
     void Die()
     {
         SetState(State.Dead);
-        GameAudio.Play("melee_die", transform.position, 1f);   // sonido de muerte
+        GameAudio.Play("melee_die", transform.position, 1f);
         CancelInvoke();
         StopAllCoroutines();
         if (agent.enabled) agent.enabled = false;
 
-        // Evento: murió un enemigo -> ScoreManager suma los puntos (EnemyData.points)
         EnemyEvents.RaiseDied(data.points, transform.position);
         Debug.Log($"{name} murió (+{data.points} puntos)");
         Destroy(gameObject, 0.5f);
     }
-
-    // ---------------- GIZMOS (se ven al seleccionar al enemigo) ----------------
 
     void DrawPatrolGizmos()
     {
@@ -857,8 +790,8 @@ public class EnemyMelee : DifficultyScaled, IDamageable
             int next = i + 1;
             if (next >= patrolPoints.Length)
             {
-                if (pingPong) break;   // ida y vuelta: no cierra el circuito
-                next = 0;              // circuito: vuelve al primero
+                if (pingPong) break;
+                next = 0;
             }
             if (patrolPoints[next] != null)
                 Gizmos.DrawLine(patrolPoints[i].position, patrolPoints[next].position);
@@ -871,22 +804,18 @@ public class EnemyMelee : DifficultyScaled, IDamageable
 
         if (data == null) return;
 
-        // Amarillo: rango de visión
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, VisionRange);
 
-        // Azul: radio de alerta a aliados
         Gizmos.color = new Color(0.2f, 0.4f, 1f);
         Gizmos.DrawWireSphere(transform.position, data.allyAlertRadius);
 
-        // Celeste: bordes del cono de visión
         Gizmos.color = Color.cyan;
         Vector3 l = Quaternion.Euler(0, -data.visionAngle * 0.5f, 0) * transform.forward;
         Vector3 r = Quaternion.Euler(0, data.visionAngle * 0.5f, 0) * transform.forward;
         Gizmos.DrawRay(transform.position, l * VisionRange);
         Gizmos.DrawRay(transform.position, r * VisionRange);
 
-        // Magenta: arco del golpe
         Gizmos.color = Color.magenta;
         Vector3 al = Quaternion.Euler(0, -data.attackAngle * 0.5f, 0) * transform.forward;
         Vector3 ar = Quaternion.Euler(0, data.attackAngle * 0.5f, 0) * transform.forward;

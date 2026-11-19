@@ -1,12 +1,8 @@
 using UnityEngine;
 using UnityEngine.Audio;
 
-// Acceso al AudioMixer (MainMixer): canales Master, Música y Efectos (SFX).
-// El mixer tiene que estar en  Assets/Scripts/Resources/Audio/MainMixer.mixer  (carpeta Resources).
-// Los volúmenes se guardan en PlayerPrefs y se aplican solos al iniciar el juego.
 public static class GameMixer
 {
-    // Nombres de los parámetros expuestos en el AudioMixer
     public const string Master = "MasterVolume";
     public const string Music = "MusicVolume";
     public const string Sfx = "SFXVolume";
@@ -17,7 +13,6 @@ public static class GameMixer
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void ResetStatics() { mixer = null; loaded = false; }
 
-    // Se aplican los volúmenes guardados apenas arranca el juego
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void ApplySaved()
     {
@@ -53,13 +48,11 @@ public static class GameMixer
         return found != null && found.Length > 0 ? found[0] : null;
     }
 
-    // Volumen guardado de 0 a 1 (1 por defecto)
     public static float Get(string param)
     {
         return PlayerPrefs.GetFloat(param, 1f);
     }
 
-    // Lo llaman los sliders: valor de 0 a 1
     public static void Set(string param, float value01)
     {
         value01 = Mathf.Clamp01(value01);
@@ -72,7 +65,6 @@ public static class GameMixer
         AudioMixer m = Mixer;
         if (m == null) return;
 
-        // El mixer usa decibelios (escala logarítmica): se convierte el valor lineal del slider
         m.SetFloat(param, Mathf.Log10(Mathf.Max(value01, 0.0001f)) * 20f);
     }
 }

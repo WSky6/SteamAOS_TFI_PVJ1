@@ -1,7 +1,6 @@
 using UnityEditor;
 using UnityEngine;
 
-// Muestra solo los campos que usa cada tipo de enemigo
 [CustomEditor(typeof(EnemyData))]
 public class EnemyDataEditor : Editor
 {

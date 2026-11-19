@@ -2,9 +2,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// Panel de opciones de audio: 3 sliders (General, Música, Efectos) conectados por script al AudioMixer.
-// Se crea por código, así se puede abrir desde el Menú Principal y desde el Menú de Pausa
-// sin armar nada en las escenas:  OptionsPanel.Open(colorDeFondo, alCerrar);
 public static class OptionsPanel
 {
     static GameObject root;
@@ -17,7 +14,7 @@ public static class OptionsPanel
     {
         onClose = closed;
 
-        if (root != null) Object.Destroy(root);   // se rearma para tomar los volúmenes guardados
+        if (root != null) Object.Destroy(root);
         Build(background);
         root.SetActive(true);
     }
@@ -30,8 +27,6 @@ public static class OptionsPanel
         onClose = null;
         if (cb != null) cb();
     }
-
-    // ---------------- Construcción de la UI ----------------
 
     static void Build(Color background)
     {
@@ -56,7 +51,7 @@ public static class OptionsPanel
 
         NewSlider("Volumen general", GameMixer.Master, bg.transform, 170f, null);
         NewSlider("Música", GameMixer.Music, bg.transform, 20f, null);
-        NewSlider("Efectos", GameMixer.Sfx, bg.transform, -130f, "player_shot");   // al soltar suena una prueba
+        NewSlider("Efectos", GameMixer.Sfx, bg.transform, -130f, "player_shot");
 
         NewButton("Atrás", bg.transform, new Vector2(0, -320), Close);
     }
@@ -71,14 +66,12 @@ public static class OptionsPanel
         rt.anchoredPosition = new Vector2(0, y - 10);
         rt.sizeDelta = new Vector2(700, 40);
 
-        // Fondo de la barra
         Image back = NewImage("Background", go.transform, new Color(0.15f, 0.15f, 0.15f, 0.9f));
         back.rectTransform.anchorMin = new Vector2(0, 0.25f);
         back.rectTransform.anchorMax = new Vector2(1, 0.75f);
         back.rectTransform.offsetMin = Vector2.zero;
         back.rectTransform.offsetMax = Vector2.zero;
 
-        // Parte rellena
         GameObject fillArea = new GameObject("Fill Area", typeof(RectTransform));
         fillArea.transform.SetParent(go.transform, false);
         RectTransform fa = (RectTransform)fillArea.transform;
@@ -93,7 +86,6 @@ public static class OptionsPanel
         fill.rectTransform.offsetMin = Vector2.zero;
         fill.rectTransform.offsetMax = Vector2.zero;
 
-        // Manija
         GameObject handleArea = new GameObject("Handle Slide Area", typeof(RectTransform));
         handleArea.transform.SetParent(go.transform, false);
         RectTransform ha = (RectTransform)handleArea.transform;
@@ -116,10 +108,8 @@ public static class OptionsPanel
         slider.maxValue = 1f;
         slider.value = GameMixer.Get(param);
 
-        // El slider mueve el volumen del canal del AudioMixer
         slider.onValueChanged.AddListener(v => GameMixer.Set(param, v));
 
-        // Al soltar el slider suena un ejemplo (en pausa los efectos no suenan solos)
         if (!string.IsNullOrEmpty(previewSound))
         {
             EventTrigger trigger = go.AddComponent<EventTrigger>();

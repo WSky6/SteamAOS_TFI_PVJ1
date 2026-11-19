@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
-    //paneles
     [SerializeField] private GameObject PausePanel;
     [SerializeField] private GameObject VictoryPanel;
     [SerializeField] private GameObject GameOverPanel;
@@ -18,10 +17,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI tutorialText;
     private bool subscribed;
 
-    //referencia healthsystem
     [SerializeField] private PlayerHealth healthSystemPlayer;
-    //suscripciones estado y vida jugador
-    //on destroy y start
 
     private void OnEnable()
     {
@@ -50,7 +46,6 @@ public class UIManager : MonoBehaviour
         if (volumeSlider != null)
             volumeSlider.value = volume;
 
-        // Sincronizar con el estado actual por si nos perdimos el evento
         if (GameManager.Instance != null)
             StateChage(GameManager.Instance.CurrentState);
     }
@@ -66,13 +61,10 @@ public class UIManager : MonoBehaviour
             subscribed = true;
             Debug.Log("UIManager suscrito a GameManager2 en " + SceneManager.GetActiveScene().name);
         }
-        // En el MainMenu no hay GameManager: es normal, no se muestra ningún aviso
 
         if (healthSystemPlayer != null)
             healthSystemPlayer.OnHealthChanged += UpdateBar;
     }
-
-    
 
     private void OnDestroy()
     {
@@ -87,9 +79,6 @@ public class UIManager : MonoBehaviour
             healthSystemPlayer.OnHealthChanged -= UpdateBar;
         }
     }
-
-    
-
 
     private void StateChage(GameState newState)
     {
@@ -134,15 +123,10 @@ public class UIManager : MonoBehaviour
         GameManager.Instance.ChangeState(GameState.GameOver);
     }
 
-
-    //metodos para las suscripciones
-
-    //update bar update enemies info
     private void UpdateEnemiesHUD(int currentEnemies)
     {
         if (textMesh != null)
         {
-            //textMesh.text = currentEnemies.ToString();
             textMesh.text = $"{currentEnemies}";
         }
     }
@@ -156,19 +140,12 @@ public class UIManager : MonoBehaviour
         }
     }
 
-
-
     private void UnlockCursor()
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
 
-    //metodos para botones UI
-
-    //exit
-
-    //toggle panel
     public void ChangeScene(string sceneName)
     {
         Time.timeScale = 1f;
@@ -194,10 +171,8 @@ public class UIManager : MonoBehaviour
         Application.Quit();
     }
 
-
     public void SetQuality(int qualityIndex)
     {
-
         QualitySettings.SetQualityLevel(qualityIndex);
     }
 
@@ -213,8 +188,6 @@ public class UIManager : MonoBehaviour
 
     public void SetMasterVolume(float sliderValue)
     {
-        // El AudioMixer usa decibelios (escala logaritmica), no valores lineales
-        // Esta formula matematica convierte el valor del slider (0 a 1) a decibelios 
         mainMixer.SetFloat("MasterVolume", Mathf.Log10(sliderValue) * 20);
 
     PlayerPrefs.SetFloat("MasterVolume", sliderValue);
@@ -231,7 +204,6 @@ public class UIManager : MonoBehaviour
 
     public void ShowHint(TutorialHint hint)
     {
-
         if (tutorialPanel != null)
         {
             tutorialPanel.SetActive(true);

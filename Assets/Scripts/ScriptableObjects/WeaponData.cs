@@ -1,8 +1,5 @@
 using UnityEngine;
 
-// ScriptableObject con los datos de un arma. La lógica (PlayerWeapon) queda limpia
-// y todos los números, colores y sonidos se editan desde el asset, sin tocar código.
-// Crear uno nuevo: clic derecho en Project > Create > Game > Weapon Data
 [CreateAssetMenu(fileName = "WeaponData", menuName = "Game/Weapon Data")]
 public class WeaponData : ScriptableObject
 {

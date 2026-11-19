@@ -9,19 +9,16 @@ public class HealthSystem : MonoBehaviour
     [SerializeField] private PlayerStats playerStats;
     [SerializeField] private EnemyStats enemyStats;
 
-
     [SerializeField] private bool isDead;
     public bool IsDead
     {
         get => isDead;
-
     }
 
     [SerializeField] private GameObject vfx;
 
     private Rigidbody rb;
     private Collider col;
-    //private Attack attack;
     private MeshRenderer mesh;
 
     public event Action<float> OnChangeHealthPlayer;
@@ -38,7 +35,6 @@ public class HealthSystem : MonoBehaviour
         isDead = false;
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
-        //attack = GetComponent<Attack>();
         mesh = GetComponent<MeshRenderer>();
     }
     public void TakeDamage(float amount)
@@ -65,11 +61,8 @@ public class HealthSystem : MonoBehaviour
                 Dead();
             }
         }
-
-
     }
 
-    
     private void Dead()
     {
         isDead = true;
@@ -94,11 +87,9 @@ public class HealthSystem : MonoBehaviour
         col.enabled = false;
         rb.isKinematic = true;
         mesh.enabled = false;
-        //attack.enabled = false;
 
         yield return new WaitForSeconds(5f);
 
         Destroy(this.gameObject);
     }
-
 }

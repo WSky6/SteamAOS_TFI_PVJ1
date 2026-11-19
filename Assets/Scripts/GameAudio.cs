@@ -1,13 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Sonidos del juego (disparos, enemigos, jugador).
-// Los clips se cargan solos de Assets/Resources/Audio/SFX/ con el formato  nombre_1.wav, nombre_2.wav, nombre_3.wav
-// Cada vez que suena un "nombre" se elige una variante al azar (distinta a la anterior) y se cambia
-// un poco el tono y el volumen, así nunca suena exactamente igual.
-//
-// Uso:  GameAudio.Play("melee_alert", transform.position);   // sonido 3D (se escucha según la distancia)
-//       GameAudio.Play2D("player_shot");                     // sonido 2D (del jugador, siempre igual de fuerte)
 public static class GameAudio
 {
     const int PoolSize = 24;
@@ -18,22 +11,19 @@ public static class GameAudio
     static AudioSource[] pool;
     static int next;
 
-    // ---------------- API ----------------
-
     public static void Play(string name, Vector3 position, float volume = 1f, float pitchVariation = 0.08f)
     {
         AudioSource s = Prepare(name, volume, pitchVariation, out AudioClip clip, out float vol);
         if (s == null) return;
 
         s.transform.position = position;
-        s.spatialBlend = 1f;                       // 3D
+        s.spatialBlend = 1f;
         s.rolloffMode = AudioRolloffMode.Linear;
         s.minDistance = 3f;
         s.maxDistance = 40f;
         s.PlayOneShot(clip, vol);
     }
 
-    // Prueba de volumen (slider de Efectos): suena aunque el juego esté en pausa
     public static void Preview(string name, float volume = 0.7f)
     {
         AudioSource s = Prepare(name, volume, 0.03f, out AudioClip clip, out float vol, true);
@@ -48,18 +38,16 @@ public static class GameAudio
         AudioSource s = Prepare(name, volume, pitchVariation, out AudioClip clip, out float vol);
         if (s == null) return;
 
-        s.spatialBlend = 0f;                       // 2D
+        s.spatialBlend = 0f;
         s.PlayOneShot(clip, vol);
     }
-
-    // ---------------- Interno ----------------
 
     static AudioSource Prepare(string name, float volume, float pitchVariation, out AudioClip clip, out float vol, bool ignorePause = false)
     {
         clip = null;
         vol = 0f;
 
-        if (Time.timeScale == 0f && !ignorePause) { return null; }   // en pausa no suena nada
+        if (Time.timeScale == 0f && !ignorePause) { return null; }
 
         LoadClips();
 
@@ -70,7 +58,6 @@ public static class GameAudio
             return null;
         }
 
-        // Variante al azar, distinta a la última que sonó
         int i = Random.Range(0, list.Length);
         if (list.Length > 1 && last.TryGetValue(name, out int prev) && i == prev)
             i = (i + 1) % list.Length;
@@ -92,7 +79,6 @@ public static class GameAudio
 
         foreach (AudioClip c in Resources.LoadAll<AudioClip>("Audio/SFX"))
         {
-            // "melee_alert_2" -> "melee_alert"
             string key = c.name;
             int us = key.LastIndexOf('_');
             if (us > 0 && int.TryParse(key.Substring(us + 1), out _)) key = key.Substring(0, us);
@@ -117,11 +103,10 @@ public static class GameAudio
                 go.transform.SetParent(host.transform, false);
                 pool[i] = go.AddComponent<AudioSource>();
                 pool[i].playOnAwake = false;
-                pool[i].outputAudioMixerGroup = GameMixer.SfxGroup;   // canal SFX del mixer
+                pool[i].outputAudioMixerGroup = GameMixer.SfxGroup;
             }
         }
 
-        // Busca una libre; si todas suenan, reutiliza la más vieja
         for (int k = 0; k < PoolSize; k++)
         {
             AudioSource s = pool[(next + k) % PoolSize];

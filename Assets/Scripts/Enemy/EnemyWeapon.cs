@@ -1,8 +1,6 @@
 using System.Collections;
 using UnityEngine;
 
-// Palito del enemigo, a su derecha.
-// Melee y boss: levantado (se mueve al atacar). A distancia: acostado (de la punta sale la bala).
 public class EnemyWeapon : MonoBehaviour
 {
     public enum Kind { Auto, MeleeRaised, RangedLying }
@@ -39,7 +37,6 @@ public class EnemyWeapon : MonoBehaviour
 
         if (kind == Kind.RangedLying)
         {
-            // Acostado, apuntando hacia adelante, a la derecha
             pivot.localPosition = new Vector3(0.65f, 0.2f, 0.3f);
             stick.transform.localPosition = new Vector3(0f, 0f, 0.5f);
             stick.transform.localScale = new Vector3(0.1f, 0.1f, 1f);
@@ -50,14 +47,12 @@ public class EnemyWeapon : MonoBehaviour
         }
         else
         {
-            // Levantado, a la derecha
             pivot.localPosition = new Vector3(0.7f, 0f, 0.25f);
             stick.transform.localPosition = new Vector3(0f, 0.5f, 0f);
             stick.transform.localScale = new Vector3(0.1f, 1f, 0.1f);
         }
     }
 
-    // Lo llama EnemyMelee / EnemyBoss con SendMessage al empezar el ataque
     void OnAttackStart(float windup)
     {
         if (kind != Kind.MeleeRaised || pivot == null) return;
@@ -68,7 +63,6 @@ public class EnemyWeapon : MonoBehaviour
 
     IEnumerator Swing(float windup)
     {
-        // 1) Se echa hacia atrás en la preparación
         float prep = Mathf.Max(0.05f, windup);
         float t = 0f;
         while (t < prep)
@@ -78,7 +72,6 @@ public class EnemyWeapon : MonoBehaviour
             yield return null;
         }
 
-        // 2) Golpe rápido hacia adelante
         t = 0f;
         const float hit = 0.12f;
         while (t < hit)
@@ -90,7 +83,6 @@ public class EnemyWeapon : MonoBehaviour
 
         yield return new WaitForSeconds(0.15f);
 
-        // 3) Vuelve a su posición
         t = 0f;
         const float back = 0.2f;
         while (t < back)
