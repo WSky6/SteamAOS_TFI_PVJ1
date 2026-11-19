@@ -13,9 +13,9 @@ namespace StarterAssets
 		[Tooltip("Velocidad durante el dash en m/s")]
 		public float DashSpeed = 20f;
 		[Tooltip("Duración del dash en segundos (distancia = DashSpeed * DashDuration)")]
-		public float DashDuration = 0.2f;
+		public float DashDuration = 0.4f;
 		[Tooltip("Tiempo de espera antes de poder volver a usar el dash")]
-		public float DashCooldown = 1f;
+		public float DashCooldown = 2f;
 		[Tooltip("Si es false, solo se puede hacer dash estando en el suelo")]
 		public bool AllowAirDash = true;
 		[Tooltip("Cantidad de dashes disponibles en el aire antes de tocar el suelo")]
@@ -35,13 +35,22 @@ namespace StarterAssets
 
 		private void Reset()
 		{
-			DashAction = new InputAction("Dash", InputActionType.Button);
-			DashAction.AddBinding("<Keyboard>/leftCtrl");
-			DashAction.AddBinding("<Gamepad>/buttonEast");
+			DashAction = CreateDefaultAction();
+		}
+
+		private static InputAction CreateDefaultAction()
+		{
+			var action = new InputAction("Dash", InputActionType.Button);
+			action.AddBinding("<Keyboard>/leftCtrl");
+			action.AddBinding("<Gamepad>/buttonEast");
+			return action;
 		}
 
 		private void Awake()
 		{
+			if (DashAction == null || DashAction.bindings.Count == 0)
+				DashAction = CreateDefaultAction();
+
 			_controller = GetComponent<CharacterController>();
 			_fpc = GetComponent<FirstPersonController>();
 			_input = GetComponent<StarterAssetsInputs>();

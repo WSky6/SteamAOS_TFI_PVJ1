@@ -9409,7 +9409,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StarterAssets.PlayerDash
   DashSpeed: 20
-  DashDuration: 0.6
+  DashDuration: 0.4
   DashCooldown: 2
   AllowAirDash: 1
   MaxAirDashes: 1
