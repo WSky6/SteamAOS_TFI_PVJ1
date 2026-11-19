@@ -1,9 +1,6 @@
 using UnityEngine;
 using StarterAssets;
 
-// Sonido de pasos: caminar, correr y agachado.
-// Los sonidos se cargan solos desde Assets/Resources/Audio/Footsteps/ (footstep_walk_1..3 y footstep_run_1..3).
-// Si querés usar otros, arrastralos a las listas del Inspector y tienen prioridad.
 [RequireComponent(typeof(CharacterController))]
 public class PlayerFootsteps : MonoBehaviour
 {
@@ -34,8 +31,8 @@ public class PlayerFootsteps : MonoBehaviour
 
         source = gameObject.AddComponent<AudioSource>();
         source.playOnAwake = false;
-        source.spatialBlend = 0f;   // sonido 2D: se escucha igual en cualquier lado
-        source.outputAudioMixerGroup = GameMixer.SfxGroup;   // canal SFX del mixer
+        source.spatialBlend = 0f;
+        source.outputAudioMixerGroup = GameMixer.SfxGroup;
 
         if (walkClips == null || walkClips.Length == 0)
             walkClips = Filter("footstep_walk");
@@ -54,7 +51,6 @@ public class PlayerFootsteps : MonoBehaviour
 
     void Update()
     {
-        // No suena en pausa, en el aire ni parado
         if (Time.timeScale == 0f) return;
 
         bool grounded = fpc != null ? fpc.Grounded : cc.isGrounded;
@@ -64,7 +60,6 @@ public class PlayerFootsteps : MonoBehaviour
 
         if (!grounded || speed < 0.5f)
         {
-            // Parado: el próximo paso suena casi enseguida al empezar a moverse
             distance = Mathf.Max(distance, 0f);
             return;
         }
@@ -88,7 +83,6 @@ public class PlayerFootsteps : MonoBehaviour
         AudioClip[] clips = running ? runClips : walkClips;
         if (clips == null || clips.Length == 0) return;
 
-        // Elige uno distinto al anterior para que no se repita
         int i = Random.Range(0, clips.Length);
         if (clips.Length > 1 && i == lastIndex) i = (i + 1) % clips.Length;
         lastIndex = i;

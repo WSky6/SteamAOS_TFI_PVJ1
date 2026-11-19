@@ -1,9 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Música del juego. Escucha el cambio de estado global del GameManager (evento OnChangeState)
-// y ajusta el volumen de la música: baja en pausa, baja más en victoria/game over.
-// Usa el AudioSource que ya tiene (el hijo "Audio Source"), y lo manda al canal Music del AudioMixer.
 public class MusicManager : MonoBehaviour
 {
     private static MusicManager instance;
@@ -16,7 +13,7 @@ public class MusicManager : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float playingVolume = 1f;
     [SerializeField, Range(0f, 1f)] private float pausedVolume = 0.3f;
     [SerializeField, Range(0f, 1f)] private float tutorialVolume = 0.5f;
-    [SerializeField, Range(0f, 1f)] private float endVolume = 0.2f;   // victoria / game over
+    [SerializeField, Range(0f, 1f)] private float endVolume = 0.2f;
     [SerializeField] private float fadeSpeed = 2f;
 
     private AudioSource source;
@@ -37,8 +34,6 @@ public class MusicManager : MonoBehaviour
         source = GetComponentInChildren<AudioSource>();
         if (source == null) source = gameObject.AddComponent<AudioSource>();
 
-        // La música SIEMPRE sale por el canal Music del mixer (así la controla su slider),
-        // aunque el Audio Source tenga puesto Master en el Inspector
         var group = GameMixer.MusicGroup;
         if (group != null) source.outputAudioMixerGroup = group;
     }
@@ -60,11 +55,9 @@ public class MusicManager : MonoBehaviour
 
         TrySubscribe();
 
-        // Cambio suave de volumen (con tiempo real: sigue funcionando en pausa)
         source.volume = Mathf.MoveTowards(source.volume, targetVolume, fadeSpeed * Time.unscaledDeltaTime);
     }
 
-    // El GameManager vive solo en los niveles: apenas aparece, nos suscribimos a su evento
     private void TrySubscribe()
     {
         GameManager gm = GameManager.Instance;
@@ -82,7 +75,6 @@ public class MusicManager : MonoBehaviour
         subscribedTo = null;
     }
 
-    // Evento del GameManager
     private void OnStateChanged(GameState state)
     {
         switch (state)

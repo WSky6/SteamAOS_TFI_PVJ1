@@ -5,7 +5,6 @@ public class EnemyRanged : DifficultyScaled, IDamageable
 {
     private enum State { Idle, Patrol, Alert, Dead }
 
-    // Visión real = la de EnemyData x sigilo (agachado ve menos lejos). La dificultad NO agranda la visión.
     float VisionRange { get { return data.visionRange * EnemyUtils.StealthMultiplier; } }
 
     [SerializeField] private EnemyData data;
@@ -27,9 +26,9 @@ public class EnemyRanged : DifficultyScaled, IDamageable
     [SerializeField] private Transform[] patrolPoints;
     [Tooltip("Desactivado: circuito en bucle (A-B-C-A). Activado: va y vuelve (A-B-C-B-A).")]
     [SerializeField] private bool pingPong = false;
-    [SerializeField] private float waitAtPoint = 1.5f;                                // pausa en cada punto
-    [SerializeField, Range(0.1f, 1f)] private float patrolSpeedMultiplier = 0.5f;    // fracción de moveSpeed
-    [SerializeField] private float arriveThreshold = 0.5f;                            // distancia para dar el punto por alcanzado
+    [SerializeField] private float waitAtPoint = 1.5f;
+    [SerializeField, Range(0.1f, 1f)] private float patrolSpeedMultiplier = 0.5f;
+    [SerializeField] private float arriveThreshold = 0.5f;
 
     private Transform player;
     private float health;
@@ -41,7 +40,6 @@ public class EnemyRanged : DifficultyScaled, IDamageable
     private float alertUntil;
     private Vector3 lastSeenPos;
 
-    // Patrulla
     private NavMeshAgent agent;
     private int patrolIndex;
     private int patrolDir = 1;
@@ -56,7 +54,6 @@ public class EnemyRanged : DifficultyScaled, IDamageable
 
     void Awake()
     {
-        // Sin puntos de patrulla no se toca nada: el enemigo se comporta como antes
         if (patrolPoints == null || patrolPoints.Length == 0) return;
 
         agent = GetComponent<NavMeshAgent>();
@@ -66,7 +63,6 @@ public class EnemyRanged : DifficultyScaled, IDamageable
             Debug.LogWarning($"{name}: no tenía NavMeshAgent, se agregó uno automáticamente. Conviene agregarlo al prefab.");
         }
 
-        // Si tiene Rigidbody, lo desactivamos para que no pelee con el agente
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
@@ -125,7 +121,6 @@ public class EnemyRanged : DifficultyScaled, IDamageable
 
                 if (sees)
                 {
-                    // Lo ve: lo sigue con la mirada y dispara
                     lastSeenPos = player.position;
                     alertUntil = Time.time + data.alertMemoryTime;
                     TurnTowards(lastSeenPos);
@@ -135,7 +130,6 @@ public class EnemyRanged : DifficultyScaled, IDamageable
                 }
                 else
                 {
-                    // No lo ve (pared en el medio): no dispara, sigue alerta
                     TurnTowards(lastSeenPos);
 
                     if (Time.time > alertUntil) LeaveAlert();
@@ -152,18 +146,15 @@ public class EnemyRanged : DifficultyScaled, IDamageable
                              coneSegments, eyeOffset, obstacleMask);
     }
 
-    // ---------------- ESTADOS ----------------
-
     void EnterAlert()
     {
-        GameAudio.Play("ranged_alert", transform.position, 0.9f);   // sonido al detectar al player
+        GameAudio.Play("ranged_alert", transform.position, 0.9f);
         state = State.Alert;
         lastSeenPos = player.position;
         alertUntil = Time.time + data.alertMemoryTime;
-        nextShot = Time.time + 1f; // pequeño tiempo de reacción
+        nextShot = Time.time + 1f;
         EnemyUtils.SetFanColor(coneMesh, alertConeColor);
 
-        // Si venía patrullando, se frena y gira solo con TurnTowards
         waiting = false;
         if (HasPatrol && agent.enabled)
         {
@@ -181,22 +172,17 @@ public class EnemyRanged : DifficultyScaled, IDamageable
         baseRotation = transform.rotation;
         EnemyUtils.SetFanColor(coneMesh, coneColor);
 
-        // Perdió al player: retoma la patrulla (o se queda quieto si no tiene puntos)
         if (HasPatrol) StartPatrol();
         else state = State.Idle;
     }
 
-    // ---------------- PATRULLA ----------------
-
     void SetupAgent()
     {
-        // Si moveSpeed/acceleration/angularSpeed del EnemyData están en 0, usa valores razonables
         agent.speed = PatrolSpeed();
         if (data.acceleration > 0f) agent.acceleration = data.acceleration;
         if (data.angularSpeed > 0f) agent.angularSpeed = data.angularSpeed;
         agent.stoppingDistance = 0.1f;
 
-        // Si quedó un poco fuera del NavMesh, lo acomoda sobre el más cercano
         if (!agent.isOnNavMesh)
         {
             if (NavMesh.SamplePosition(transform.position, out NavMeshHit navHit, 3f, NavMesh.AllAreas))
@@ -228,7 +214,6 @@ public class EnemyRanged : DifficultyScaled, IDamageable
     {
         if (!agent.enabled || !agent.isOnNavMesh) return;
 
-        // Esperando en un punto: gira la cabeza de un lado a otro
         if (waiting)
         {
             ScanHeadAt((Time.time - waitStart) * data.headScanSpeed);
@@ -245,7 +230,6 @@ public class EnemyRanged : DifficultyScaled, IDamageable
 
         if (agent.pathPending) return;
 
-        // Punto inalcanzable: pasa al siguiente
         if (agent.pathStatus == NavMeshPathStatus.PathInvalid)
         {
             AdvancePatrolIndex();
@@ -253,12 +237,11 @@ public class EnemyRanged : DifficultyScaled, IDamageable
             return;
         }
 
-        // Llegó al punto: se detiene y espera
         if (agent.remainingDistance <= arriveThreshold)
         {
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
-            baseRotation = transform.rotation; // el giro de cabeza parte de hacia donde mira ahora
+            baseRotation = transform.rotation;
             waiting = true;
             waitStart = Time.time;
             waitUntil = Time.time + waitAtPoint;
@@ -296,8 +279,6 @@ public class EnemyRanged : DifficultyScaled, IDamageable
         }
     }
 
-    // ---------------- PERCEPCIÓN ----------------
-
     bool CanSeePlayer(float dist, bool useAngle)
     {
         if (dist > VisionRange) return false;
@@ -314,14 +295,11 @@ public class EnemyRanged : DifficultyScaled, IDamageable
         return !EnemyUtils.SegmentBlocked(origin, EnemyUtils.PlayerCenter(), transform, obstacleMask);
     }
 
-    // ---------------- MOVIMIENTO DE CABEZA ----------------
-
     void ScanHead()
     {
         ScanHeadAt(Time.time * data.headScanSpeed + scanPhase);
     }
 
-    // Igual que ScanHead pero con la fase del seno elegida (en patrulla empieza en 0 para no dar un salto)
     void ScanHeadAt(float phase)
     {
         if (data.headScanAngle <= 0f) return;
@@ -348,14 +326,11 @@ public class EnemyRanged : DifficultyScaled, IDamageable
         return Vector3.Angle(transform.forward, dir);
     }
 
-    // ---------------- DISPARO ----------------
-
     void Shoot()
     {
         nextShot = Time.time + data.shootInterval;
-        GameAudio.Play("ranged_shot", transform.position, 1f);   // sonido del disparo
+        GameAudio.Play("ranged_shot", transform.position, 1f);
 
-        // La bala sale de la punta del palito acostado
         EnemyWeapon weapon = GetComponent<EnemyWeapon>();
         Vector3 muzzle = (weapon != null && weapon.Muzzle != null)
             ? weapon.Muzzle.position
@@ -367,16 +342,12 @@ public class EnemyRanged : DifficultyScaled, IDamageable
                           bulletColor, transform);
     }
 
-    // ---------------- VISUAL ----------------
-
     void PaintBody()
     {
         Renderer r = GetComponent<Renderer>();
         if (r == null) r = GetComponentInChildren<Renderer>();
         if (r != null) r.material.color = bodyColor;
     }
-
-    // ---------------- VIDA ----------------
 
     public void TakeDamage(float amount)
     {
@@ -390,17 +361,15 @@ public class EnemyRanged : DifficultyScaled, IDamageable
     void Die()
     {
         state = State.Dead;
-        GameAudio.Play("ranged_die", transform.position, 1f);   // sonido de muerte
+        GameAudio.Play("ranged_die", transform.position, 1f);
         if (coneObj != null) coneObj.SetActive(false);
         if (agent != null && agent.enabled) agent.enabled = false;
 
-        // Evento: murió un enemigo -> ScoreManager suma los puntos (EnemyData.points)
         EnemyEvents.RaiseDied(data.points, transform.position);
         Debug.Log($"{name} murió (+{data.points} puntos)");
         Destroy(gameObject, 0.5f);
     }
 
-    // Para probar sin script de disparo: clic derecho en el título del componente (en Play)
     [ContextMenu("Test: recibir golpe")]
     void TestHit() { TakeDamage((data.maxHealth * Multiplier)); }
 
@@ -417,8 +386,8 @@ public class EnemyRanged : DifficultyScaled, IDamageable
             int next = i + 1;
             if (next >= patrolPoints.Length)
             {
-                if (pingPong) break;   // ida y vuelta: no cierra el circuito
-                next = 0;              // circuito: vuelve al primero
+                if (pingPong) break;
+                next = 0;
             }
             if (patrolPoints[next] != null)
                 Gizmos.DrawLine(patrolPoints[i].position, patrolPoints[next].position);

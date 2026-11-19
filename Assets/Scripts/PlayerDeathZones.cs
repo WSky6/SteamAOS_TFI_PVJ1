@@ -1,8 +1,5 @@
 using UnityEngine;
 
-// Muerte instantánea del player al tocar cualquier cosa con el layer "DeathPlain".
-// Funciona con suelo sólido (si pisás) y con triggers (por ejemplo un plano bajo un pozo).
-// Se agrega solo al player desde PlayerSetup.
 public class PlayerDeathZones : MonoBehaviour
 {
     [SerializeField] private string deathLayerName = "DeathPlain";
@@ -37,7 +34,6 @@ public class PlayerDeathZones : MonoBehaviour
         }
         else
         {
-            // Revisa el suelo bajo los pies (por si el contacto no dispara el evento)
             Vector3 origin = FeetPosition() + Vector3.up * 0.1f;
             if (Physics.Raycast(origin, Vector3.down, 0.6f, 1 << deathLayer, QueryTriggerInteraction.Collide))
             {
@@ -60,14 +56,12 @@ public class PlayerDeathZones : MonoBehaviour
         return transform.position;
     }
 
-    // Suelo sólido o paredes tocadas por el CharacterController
     void OnControllerColliderHit(ControllerColliderHit hit)
     {
         if (deathLayer >= 0 && hit.gameObject.layer == deathLayer)
             Kill("tocó una zona de muerte");
     }
 
-    // Zonas trigger (por ejemplo un plano bajo un pozo)
     void OnTriggerEnter(Collider other)
     {
         if (deathLayer >= 0 && other.gameObject.layer == deathLayer)

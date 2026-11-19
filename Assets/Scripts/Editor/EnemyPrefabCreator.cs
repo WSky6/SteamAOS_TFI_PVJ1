@@ -38,7 +38,6 @@ public static class EnemyPrefabCreator
         go.name = prefabName;
         go.transform.localScale = Vector3.one * scale;
 
-        // Los RequireComponent agregan solos el NavMeshAgent (y el EnemyJumper del boss)
         Component script = go.AddComponent(scriptType);
         go.AddComponent<EnemyWeapon>();
 

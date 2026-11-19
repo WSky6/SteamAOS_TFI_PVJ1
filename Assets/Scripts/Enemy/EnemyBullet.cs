@@ -70,7 +70,6 @@ public class EnemyBullet : MonoBehaviour
 
             if (shooter != null && (t == shooter || t.IsChildOf(shooter))) continue;
 
-            // Otros enemigos: la bala los atraviesa
             if (!IsPlayer(t) && t.GetComponentInParent<IDamageable>() != null) continue;
 
             if (buf[i].distance < best)
@@ -100,13 +99,12 @@ public class EnemyBullet : MonoBehaviour
                 }
             }
 
-            // Explosión de chispas en el punto de impacto
             Vector3 point = h.distance > 0f ? h.point : transform.position;
             Vector3 normal = h.normal.sqrMagnitude > 0.01f ? h.normal : -transform.forward;
             BulletImpact.Spawn(point, normal, hitPlayer ? new Color(1f, 0.2f, 0.2f) : impactColor,
                                hitPlayer ? 22 : 16);
             if (!hitPlayer) GameAudio.Play("impact_wall", point, 0.6f);
-            Destroy(gameObject); // pared o player
+            Destroy(gameObject);
             return;
         }
 

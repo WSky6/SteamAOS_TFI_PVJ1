@@ -38,7 +38,6 @@ public class EnemyJumper : MonoBehaviour
         enabled = false;
     }
 
-    // Llamar cada frame mientras persigue
     public void Tick(float dist)
     {
         if (IsJumping || data == null || player == null) return;
@@ -48,8 +47,6 @@ public class EnemyJumper : MonoBehaviour
 
         CheckStuck(dist);
     }
-
-    // ---------------- ATASCO ----------------
 
     void CheckStuck(float dist)
     {
@@ -98,8 +95,6 @@ public class EnemyJumper : MonoBehaviour
         }
     }
 
-    // ---------------- SALTO ----------------
-
     void TryJump(float dist)
     {
         if (Time.time < nextJumpTime || !agent.isOnNavMesh) return;
@@ -114,10 +109,8 @@ public class EnemyJumper : MonoBehaviour
         Vector3 lowOrigin = new Vector3(transform.position.x, footY + 0.3f, transform.position.z);
         Vector3 highOrigin = new Vector3(transform.position.x, footY + data.maxJumpHeight + 0.2f, transform.position.z);
 
-        // Obstáculo bajo adelante...
         if (!ObstacleAhead(lowOrigin, dir, data.jumpTriggerDistance)) return;
 
-        // ...pero no tan alto como una pared
         if (ObstacleAhead(highOrigin, dir, data.jumpTriggerDistance + 0.5f)) return;
 
         TryJumpInDirection(dir, true);
@@ -161,10 +154,8 @@ public class EnemyJumper : MonoBehaviour
                 if (testPath.status != NavMeshPathStatus.PathComplete) continue;
             }
 
-            // Una pared en el camino
             if (ObstacleAhead(highOrigin, flatMove.normalized, flatMove.magnitude)) continue;
 
-            // El arco no puede atravesar nada
             Vector3 startPos = transform.position;
             Vector3 endPos = nav.position + Vector3.up * agent.baseOffset;
             if (ArcBlocked(startPos, endPos)) continue;
@@ -224,7 +215,6 @@ public class EnemyJumper : MonoBehaviour
             Vector3 p = Vector3.Lerp(start, end, k);
             p.y += Mathf.Sin(k * Mathf.PI) * data.jumpArcHeight;
 
-            // Si choca con algo, corta el salto ahí
             if (EnemyUtils.SegmentBlocked(transform.position, p, transform, obstacleMask))
             {
                 crashed = true;

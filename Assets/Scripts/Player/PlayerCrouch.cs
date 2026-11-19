@@ -2,8 +2,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using StarterAssets;
 
-// Sigilo: mantener C para agacharse (CTRL izquierdo es el dash).
-// Agachado: el jugador es más bajo, más lento y los enemigos lo ven de menos lejos.
 [RequireComponent(typeof(CharacterController))]
 public class PlayerCrouch : MonoBehaviour
 {
@@ -13,7 +11,6 @@ public class PlayerCrouch : MonoBehaviour
     [SerializeField] float transitionSpeed = 10f;
 
     [Header("Sigilo")]
-    // Agachado, la visión de los enemigos se multiplica por este valor (0.5 = ve la mitad)
     [SerializeField, Range(0.1f, 1f)] float crouchVisionMultiplier = 0.5f;
 
     public static bool IsCrouching { get; private set; }
@@ -49,15 +46,12 @@ public class PlayerCrouch : MonoBehaviour
 
     void Update()
     {
-        // Se agacha con C (Ctrl izquierdo quedó libre para el dash)
         bool wantCrouch = Keyboard.current != null && Keyboard.current.cKey.isPressed;
 
-        // Si quiere pararse pero hay techo encima, sigue agachado
         if (!wantCrouch && IsCrouching && !CanStandUp()) wantCrouch = true;
 
         if (wantCrouch != IsCrouching) SetCrouch(wantCrouch);
 
-        // Transición suave de altura y cámara
         float targetH = IsCrouching ? crouchHeight : standHeight;
         float newH = Mathf.Lerp(cc.height, targetH, Time.deltaTime * transitionSpeed);
         cc.height = newH;

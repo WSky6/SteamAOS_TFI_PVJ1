@@ -2,10 +2,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Muestra los puntos en pantalla (arriba al centro). Escucha el evento ScoreManager.OnScoreChanged.
-// Se crea solo al iniciar el juego y aparece únicamente en los niveles (no en el menú).
-// Si el HUD de un compañero ya tiene su propio texto de puntos, alcanza con que se suscriba a
-// ScoreManager.OnScoreChanged y se puede borrar este script.
 public class ScoreHUD : MonoBehaviour
 {
     static ScoreHUD instance;
@@ -44,7 +40,6 @@ public class ScoreHUD : MonoBehaviour
 
     void Update()
     {
-        // Solo se ve en los niveles
         bool inLevel = !SceneManager.GetActiveScene().name.Contains("Menu");
         if (canvasObj != null && canvasObj.activeSelf != inLevel) canvasObj.SetActive(inLevel);
     }
@@ -79,7 +74,6 @@ public class ScoreHUD : MonoBehaviour
         label.color = Color.white;
         label.raycastTarget = false;
 
-        // Borde negro para que se lea sobre cualquier fondo
         Outline outline = go.AddComponent<Outline>();
         outline.effectColor = new Color(0f, 0f, 0f, 0.9f);
         outline.effectDistance = new Vector2(3f, -3f);

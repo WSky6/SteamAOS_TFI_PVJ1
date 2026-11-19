@@ -1,9 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// Menú de pausa: agrega un botón "Opciones" que aparece SOLO mientras el juego está en pausa
-// y abre el mismo panel de opciones (3 sliders de audio). Escucha el evento OnChangeState del GameManager.
-// Se crea solo al iniciar el juego: no hay que ponerlo en ninguna escena.
 public class PauseOptions : MonoBehaviour
 {
     static PauseOptions instance;
@@ -37,7 +34,6 @@ public class PauseOptions : MonoBehaviour
 
     void Update()
     {
-        // El GameManager aparece recién en los niveles: apenas existe, nos suscribimos
         GameManager gm = GameManager.Instance;
         if (gm != null && gm != subscribedTo)
         {
@@ -54,7 +50,6 @@ public class PauseOptions : MonoBehaviour
         subscribedTo = null;
     }
 
-    // Evento del GameManager: el botón se ve solo en pausa
     void OnStateChanged(GameState state)
     {
         bool paused = state == GameState.Paused;
@@ -78,7 +73,6 @@ public class PauseOptions : MonoBehaviour
         scaler.matchWidthOrHeight = 1f;
         buttonCanvas.AddComponent<GraphicRaycaster>();
 
-        // Botón arriba a la derecha
         GameObject btn = new GameObject("Opciones", typeof(RectTransform));
         btn.transform.SetParent(buttonCanvas.transform, false);
         Image img = btn.AddComponent<Image>();

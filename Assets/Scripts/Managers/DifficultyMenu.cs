@@ -3,10 +3,6 @@ using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Menú de dificultad. Ponerlo en el botón "Jugar" del MainMenu.
-// Al hacer click en Jugar aparece un panel con Fácil / Normal / Difícil / Atrás.
-// Al elegir una dificultad se guarda (DifficultyScaled.SetDifficulty) y se carga el primer nivel.
-// El panel se crea solo por código: no hay que armar nada más en Unity.
 [RequireComponent(typeof(Button))]
 [DisallowMultipleComponent]
 public class DifficultyMenu : MonoBehaviour
@@ -15,23 +11,20 @@ public class DifficultyMenu : MonoBehaviour
 
     static readonly string[] names = { "Fácil", "Normal", "Difícil" };
 
-    // Compartido: aunque haya dos copias del script, el panel se crea una sola vez
     static GameObject panel;
-    GameObject mainPanel;   // el panel del menú principal (Main_Panel), se oculta como hace Opciones
+    GameObject mainPanel;
     Font font;
 
     void Awake()
     {
         Button play = GetComponent<Button>();
 
-        // Apaga lo que hacía antes el botón Jugar (cargar Nivel1 directo)
         int count = play.onClick.GetPersistentEventCount();
         for (int i = 0; i < count; i++)
             play.onClick.SetPersistentListenerState(i, UnityEventCallState.Off);
 
         play.onClick.AddListener(Open);
 
-        // El botón Play está dentro de Main_Panel: ese es el que hay que ocultar
         mainPanel = transform.parent != null ? transform.parent.gameObject : null;
     }
 
@@ -55,8 +48,6 @@ public class DifficultyMenu : MonoBehaviour
         SceneManager.LoadScene(firstScene);
     }
 
-    // ---------------- UI creada por código ----------------
-
     void BuildPanel()
     {
         font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
@@ -69,11 +60,10 @@ public class DifficultyMenu : MonoBehaviour
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
         scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-        scaler.matchWidthOrHeight = 1f;   // se ajusta al alto: entra en cualquier pantalla
+        scaler.matchWidthOrHeight = 1f;
         canvasGo.AddComponent<GraphicRaycaster>();
         panel = canvasGo;
 
-        // Fondo transparente: se ve la imagen del menú, igual que en Opciones
         Image bg = NewImage("Fondo", canvasGo.transform, new Color(0f, 0f, 0f, 0f));
         bg.raycastTarget = false;
         Stretch(bg.rectTransform);

@@ -33,7 +33,6 @@ namespace StarterAssets
 		private float _nextDashTime;
 		private int _airDashesLeft;
 
-		// Se llama al agregar el componente: binding por defecto (Ctrl izquierdo / botón Este del gamepad)
 		private void Reset()
 		{
 			DashAction = new InputAction("Dash", InputActionType.Button);
@@ -60,7 +59,6 @@ namespace StarterAssets
 			DashAction.performed -= OnDashPerformed;
 			DashAction.Disable();
 
-			// por si se desactiva el componente en pleno dash
 			if (IsDashing)
 			{
 				StopAllCoroutines();
@@ -71,7 +69,6 @@ namespace StarterAssets
 
 		private void Update()
 		{
-			// Recargar dashes aéreos al tocar el suelo
 			if (_fpc.Grounded && !IsDashing)
 			{
 				_airDashesLeft = MaxAirDashes;
@@ -93,7 +90,6 @@ namespace StarterAssets
 				_airDashesLeft--;
 			}
 
-			// Dirección según el input; si no hay input, hacia adelante
 			Vector3 dir = transform.right * _input.move.x + transform.forward * _input.move.y;
 			if (dir.sqrMagnitude < 0.01f) dir = transform.forward;
 			dir.Normalize();

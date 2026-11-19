@@ -2,8 +2,6 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-// Herramienta de editor: borra los componentes "Missing (Mono Script)" de los objetos seleccionados
-// y de todos sus hijos. Uso: seleccionar el objeto (ej. Play) -> menú Tools > Quitar scripts rotos.
 public static class RemoveMissingScripts
 {
     [MenuItem("Tools/Quitar scripts rotos (seleccion y hijos)")]

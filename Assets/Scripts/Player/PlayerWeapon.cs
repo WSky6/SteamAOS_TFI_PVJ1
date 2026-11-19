@@ -1,29 +1,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// ============================================================================
-//  ARMA DEL PLAYER   <-- ACÁ SE MANEJA LA MUNICIÓN (para quien haga el HUD)
-//
-//  Leer desde el HUD:
-//    PlayerWeapon.Ammo            balas que quedan en el cargador
-//    PlayerWeapon.MagazineSize    tamaño del cargador
-//    PlayerWeapon.IsReloading     true mientras recarga
-//    PlayerWeapon.ReloadProgress  de 0 a 1 (para una barrita de recarga)
-//  O suscribirse a los eventos:
-//    OnAmmoChanged(actual, cargador)   cada vez que cambia la munición
-//    OnReloadStarted() / OnReloadFinished()
-//
-//  Nota: el arma se agrega sola al player unos instantes después de empezar
-//  (script PlayerSetup), así que conviene LEER las propiedades en Update
-//  y no solo suscribirse en Start.
-//
-//  Controles: clic izquierdo dispara, R recarga (también recarga sola al vaciarse).
-//  Este script NO dibuja nada en pantalla, salvo el puntero (Show Crosshair).
-// ============================================================================
 public class PlayerWeapon : MonoBehaviour
 {
     [Header("Datos del arma (ScriptableObject)")]
-    [SerializeField] private WeaponData data;   // vacío = se carga Resources/Weapons/PlayerPistol
+    [SerializeField] private WeaponData data;
 
     [Header("Disparo")]
     [SerializeField] private float damage = 25f;
@@ -36,8 +17,8 @@ public class PlayerWeapon : MonoBehaviour
     [SerializeField] private float reloadTime = 1.2f;
 
     [Header("Animación de recarga")]
-    [SerializeField] private float reloadDip = 0.3f;     // cuánto baja el arma
-    [SerializeField] private float reloadTilt = 55f;     // cuánto se inclina hacia abajo (grados)
+    [SerializeField] private float reloadDip = 0.3f;
+    [SerializeField] private float reloadTilt = 55f;
 
     [Header("Arma (palito)")]
     [SerializeField] private Vector3 stickPosition = new Vector3(0.3f, -0.28f, 0.55f);
@@ -61,7 +42,6 @@ public class PlayerWeapon : MonoBehaviour
     private float recoilUntil;
     private bool warnedNoCamera;
 
-    // ---------------- MUNICIÓN (estado que lee el HUD) ----------------
     private int ammo;
     private bool reloading;
     private float reloadStart;
@@ -73,11 +53,10 @@ public class PlayerWeapon : MonoBehaviour
         ? Mathf.Clamp01((Time.time - reloadStart) / Mathf.Max(0.1f, reloadTime))
         : 1f;
 
-    public event System.Action<int, int> OnAmmoChanged;  // (balas actuales, tamaño del cargador)
+    public event System.Action<int, int> OnAmmoChanged;
     public event System.Action OnReloadStarted;
     public event System.Action OnReloadFinished;
 
-    // Copia los datos del ScriptableObject (WeaponData). Si no hay asset, se usan los valores de abajo.
     void ApplyData()
     {
         if (data == null) data = Resources.Load<WeaponData>("Weapons/PlayerPistol");
@@ -117,7 +96,7 @@ public class PlayerWeapon : MonoBehaviour
         reloading = true;
         reloadStart = Time.time;
         OnReloadStarted?.Invoke();
-        GameAudio.Play2D("reload_start", 0.8f);   // sonido: sacar el cargador
+        GameAudio.Play2D("reload_start", 0.8f);
     }
 
     void FinishReload()
@@ -125,12 +104,11 @@ public class PlayerWeapon : MonoBehaviour
         reloading = false;
         SetAmmo(magazineSize);
         OnReloadFinished?.Invoke();
-        GameAudio.Play2D("reload_end", 0.8f);     // sonido: cargador puesto
+        GameAudio.Play2D("reload_end", 0.8f);
     }
 
     void Update()
     {
-        // Si no hay cámara o se destruyó (cambio de escena), la busca y arma el palito de nuevo
         if (cam == null || pivot == null)
         {
             cam = FindCamera();
@@ -148,9 +126,8 @@ public class PlayerWeapon : MonoBehaviour
             BuildStick();
         }
 
-        if (Time.timeScale == 0f) return; // en pausa no dispara
+        if (Time.timeScale == 0f) return;
 
-        // ---------------- RECARGA ----------------
         float dip = 0f;
 
         if (reloading)
@@ -158,18 +135,16 @@ public class PlayerWeapon : MonoBehaviour
             float p = ReloadProgress;
 
             if (p >= 1f) FinishReload();
-            else dip = Mathf.Sin(p * Mathf.PI); // baja y vuelve a subir
+            else dip = Mathf.Sin(p * Mathf.PI);
         }
         else
         {
             bool reloadKey = Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame;
             if (reloadKey && ammo < magazineSize) StartReload();
 
-            // Cargador vacío: recarga sola
             if (ammo <= 0 && Time.time >= nextFire) StartReload();
         }
 
-        // ---------------- ANIMACIÓN DEL ARMA ----------------
         float recoil = Time.time < recoilUntil ? -0.06f : 0f;
         Vector3 targetPos = stickPosition + new Vector3(0f, -reloadDip * dip, recoil);
         Quaternion targetRot = Quaternion.Euler(reloadTilt * dip, 0f, 0f);
@@ -177,10 +152,9 @@ public class PlayerWeapon : MonoBehaviour
         pivot.localPosition = Vector3.Lerp(pivot.localPosition, targetPos, 25f * Time.deltaTime);
         pivot.localRotation = Quaternion.Slerp(pivot.localRotation, targetRot, 25f * Time.deltaTime);
 
-        // ---------------- DISPARO ----------------
         bool click = Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
         if (click && !reloading && ammo > 0 && Time.time >= nextFire) Fire();
-        else if (click && (reloading || ammo <= 0)) GameAudio.Play2D("player_empty", 0.7f);   // clic sin balas
+        else if (click && (reloading || ammo <= 0)) GameAudio.Play2D("player_empty", 0.7f);
     }
 
     Camera FindCamera()
@@ -200,7 +174,6 @@ public class PlayerWeapon : MonoBehaviour
         pivot.SetParent(cam.transform, false);
         pivot.localPosition = stickPosition;
 
-        // Cuerpo del arma
         GameObject stick = GameObject.CreatePrimitive(PrimitiveType.Cube);
         stick.name = "Palito";
         Destroy(stick.GetComponent<Collider>());
@@ -209,7 +182,6 @@ public class PlayerWeapon : MonoBehaviour
         stick.transform.localScale = new Vector3(stickThickness, stickThickness, stickLength);
         stick.GetComponent<Renderer>().material.color = stickColor;
 
-        // Punta brillante: de ahí sale la bala
         GameObject tip = GameObject.CreatePrimitive(PrimitiveType.Cube);
         tip.name = "Punta";
         Destroy(tip.GetComponent<Collider>());
@@ -228,12 +200,11 @@ public class PlayerWeapon : MonoBehaviour
         nextFire = Time.time + fireCooldown;
         recoilUntil = Time.time + 0.08f;
         SetAmmo(ammo - 1);
-        GameAudio.Play2D(data != null ? data.shotSound : "player_shot", 0.9f);    // sonido del disparo
+        GameAudio.Play2D(data != null ? data.shotSound : "player_shot", 0.9f);
 
         Vector3 origin = cam.transform.position;
         Vector3 camDir = cam.transform.forward;
 
-        // Punto al que apunta el puntero (centro de la pantalla)
         Vector3 target = origin + camDir * 100f;
         int n = Physics.RaycastNonAlloc(origin, camDir, hits, 200f, ~0, QueryTriggerInteraction.Ignore);
         float best = float.MaxValue;
@@ -246,15 +217,12 @@ public class PlayerWeapon : MonoBehaviour
         }
         if (best < float.MaxValue) target = origin + camDir * best;
 
-        // La bala sale de la punta del palito y viaja hacia el punto del puntero
         Vector3 muzzlePos = muzzle.position;
         Vector3 dir = (target - muzzlePos).normalized;
-        if (Vector3.Dot(dir, camDir) < 0.5f) dir = camDir; // objetivo pegado: tira recto
+        if (Vector3.Dot(dir, camDir) < 0.5f) dir = camDir;
 
         PlayerBullet.Spawn(muzzlePos, dir, bulletSpeed, damage, bulletColor, transform);
     }
-
-    // ---------------- PUNTERO (lo único que dibuja este script) ----------------
 
     void OnGUI()
     {
@@ -264,11 +232,9 @@ public class PlayerWeapon : MonoBehaviour
         float cy = Screen.height * 0.5f;
         Texture2D white = Texture2D.whiteTexture;
 
-        // Contorno negro
         GUI.color = new Color(0f, 0f, 0f, 0.8f);
         DrawCross(cx, cy, white, 1.5f);
 
-        // Cruz blanca
         GUI.color = Color.white;
         DrawCross(cx, cy, white, 0f);
 
@@ -281,9 +247,9 @@ public class PlayerWeapon : MonoBehaviour
         float s = crosshairSize + extra;
         float g = crosshairGap - extra;
 
-        GUI.DrawTexture(new Rect(cx - t * 0.5f, cy - g - s, t, s), tex);        // arriba
-        GUI.DrawTexture(new Rect(cx - t * 0.5f, cy + g, t, s), tex);            // abajo
-        GUI.DrawTexture(new Rect(cx - g - s, cy - t * 0.5f, s, t), tex);        // izquierda
-        GUI.DrawTexture(new Rect(cx + g, cy - t * 0.5f, s, t), tex);            // derecha
+        GUI.DrawTexture(new Rect(cx - t * 0.5f, cy - g - s, t, s), tex);
+        GUI.DrawTexture(new Rect(cx - t * 0.5f, cy + g, t, s), tex);
+        GUI.DrawTexture(new Rect(cx - g - s, cy - t * 0.5f, s, t), tex);
+        GUI.DrawTexture(new Rect(cx + g, cy - t * 0.5f, s, t), tex);
     }
 }

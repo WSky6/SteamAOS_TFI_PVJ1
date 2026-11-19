@@ -64,15 +64,14 @@ public class PlayerBullet : MonoBehaviour
             IDamageable d = h.transform.GetComponentInParent<IDamageable>();
             if (d != null) d.TakeDamage(damage);
 
-            // Explosión de chispas en el punto de impacto
             Vector3 point = h.distance > 0f ? h.point : transform.position;
             Vector3 normal = h.normal.sqrMagnitude > 0.01f ? h.normal : -transform.forward;
             Color c = d != null ? new Color(1f, 0.45f, 0.1f) : bulletColor;
             BulletImpact.Spawn(point, normal, c, d != null ? 22 : 16);
-            if (d != null) GameAudio.Play("hit_enemy", point, 0.9f);   // sonido: le pegó a un enemigo
-            else GameAudio.Play("impact_wall", point, 0.7f);           // sonido: pegó en una pared
+            if (d != null) GameAudio.Play("hit_enemy", point, 0.9f);
+            else GameAudio.Play("impact_wall", point, 0.7f);
 
-            Destroy(gameObject); // pared o enemigo
+            Destroy(gameObject);
             return;
         }
 

@@ -26,7 +26,6 @@ public class GameManager : MonoBehaviour
     public InputActionReference pauseAction;
 
     [Header("Victory Settings")]
-    //[SerializeField] private EnemyAI[] enemies;
     [SerializeField] private int totalEnemies;
     [SerializeField] private int enemiesRemaining;
 
@@ -189,6 +188,4 @@ public class GameManager : MonoBehaviour
 
         Debug.Log("Datos del juego reiniciados");
     }
-
-    
 }

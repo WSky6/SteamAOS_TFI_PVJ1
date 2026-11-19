@@ -1,6 +1,5 @@
 using UnityEngine;
 
-// Funciones compartidas por el enemigo a distancia, el boss y el salto
 public static class EnemyUtils
 {
     static readonly RaycastHit[] buffer = new RaycastHit[16];
@@ -20,10 +19,8 @@ public static class EnemyUtils
         }
     }
 
-    // Sigilo: 1 = de pie, menor a 1 = agachado (los enemigos ven menos lejos)
     public static float StealthMultiplier { get { return PlayerCrouch.VisionMultiplier; } }
 
-    // Centro del cuerpo del player (hacia ahí apuntan las balas y la visión)
     public static Vector3 PlayerCenter()
     {
         Transform p = Player;
@@ -33,7 +30,6 @@ public static class EnemyUtils
         return playerCollider != null ? playerCollider.bounds.center : p.position + Vector3.up;
     }
 
-    // true = no cuenta como pared (uno mismo, el player y otros enemigos)
     public static bool IsIgnored(Transform hit, Transform self)
     {
         if (hit == self || hit.IsChildOf(self)) return true;
@@ -75,7 +71,6 @@ public static class EnemyUtils
         return best;
     }
 
-    // Ojo blanco en el frente para ver hacia dónde mira
     public static void CreateEye(Transform parent)
     {
         GameObject eye = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -131,7 +126,6 @@ public static class EnemyUtils
         mesh.colors = cols;
     }
 
-    // Abanico recortado por las paredes
     public static void UpdateFan(Transform t, Mesh mesh, Vector3[] verts, float angleSpan, float radius,
                                  int segments, float eyeOffset, LayerMask mask)
     {

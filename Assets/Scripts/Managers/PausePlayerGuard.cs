@@ -2,14 +2,10 @@ using System.Collections.Generic;
 using StarterAssets;
 using UnityEngine;
 
-// Congela los controles del jugador mientras el juego está detenido (pausa, tutorial, victoria, game over).
-// Sin esto, con Time.timeScale = 0 la cámara seguía girando con el mouse y el arma podía disparar al hacer clic en el menú.
-// Se crea solo al iniciar el juego: no hay que ponerlo en ninguna escena.
 public class PausePlayerGuard : MonoBehaviour
 {
     static PausePlayerGuard instance;
 
-    // Componentes que se apagaron por la pausa (para volver a encender solo esos)
     readonly List<Behaviour> disabledByPause = new List<Behaviour>();
     bool frozen;
 
@@ -42,7 +38,6 @@ public class PausePlayerGuard : MonoBehaviour
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player == null) return;
 
-        // Movimiento y cámara, arma y dash
         Disable(player.GetComponent<FirstPersonController>());
         Disable(player.GetComponent<PlayerWeapon>());
         Disable(player.GetComponent<PlayerDash>());
@@ -50,7 +45,7 @@ public class PausePlayerGuard : MonoBehaviour
 
     void Disable(Behaviour b)
     {
-        if (b == null || !b.enabled) return;   // si ya estaba apagado (ej. arma muerta) no se toca
+        if (b == null || !b.enabled) return;
         b.enabled = false;
         disabledByPause.Add(b);
     }
@@ -61,9 +56,8 @@ public class PausePlayerGuard : MonoBehaviour
 
         foreach (Behaviour b in disabledByPause)
         {
-            if (b == null) continue;   // el objeto se destruyó (cambio de escena)
+            if (b == null) continue;
 
-            // Si el jugador murió mientras tanto, el arma tiene que seguir apagada
             if (b is PlayerWeapon)
             {
                 PlayerHealth health = b.GetComponent<PlayerHealth>();
