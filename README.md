@@ -25,6 +25,7 @@ Shooter en primera persona con enfoque de alta velocidad.
 Consignas opcionales: Sitema de Sigilo e Infiltración, al agacharse los enemigos tienen rango de vision reducido.
 
 Selector de Dificultad en Menú Principal: Al darle al boton jugar se puede elegir un nivel de dificultad que cambia los daños, vida y velocidad de los enemigos. (Facil, Normal, Dificil).
+
 --- 
 
 ## 🕹️ Controles del Jugador 
