@@ -28,6 +28,14 @@ Selector de Dificultad en Menú Principal: Al darle al boton jugar se puede eleg
 
 --- 
 
+## Ficha Técnica
+
+- Motor: Unity 6
+- Versión: 6000.5.7f1
+- Motor de Renderizado: Universal Render Pipeline (URP)
+
+--- 
+
 ## 🕹️ Controles del Jugador 
 | Acción | Tecla / Botón | Descripción | 
 | :--- | :--- | :--- | 
