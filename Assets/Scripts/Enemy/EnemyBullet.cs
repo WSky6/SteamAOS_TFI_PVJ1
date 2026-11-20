@@ -11,6 +11,10 @@ public class EnemyBullet : MonoBehaviour
     private Transform shooter;
     private Color impactColor = Color.yellow;
 
+    [SerializeField] private static Material Repuesto;
+
+    static Material RepuestoMaterial;
+
     public static EnemyBullet Spawn(GameObject prefab, Vector3 position, Vector3 direction,
                                     float speed, float damage, Color color, Transform shooter)
     {
@@ -31,7 +35,19 @@ public class EnemyBullet : MonoBehaviour
             if (c != null) Destroy(c);
 
             Renderer r = go.GetComponent<Renderer>();
-            if (r != null) r.material.color = color;
+            if (r != null)
+            {
+                if (RepuestoMaterial == null)
+                    RepuestoMaterial = Resources.Load<Material>("EnemyBulletMat");
+
+                r.sharedMaterial = RepuestoMaterial;
+
+                var block = new MaterialPropertyBlock();
+                r.GetPropertyBlock(block);
+                block.SetColor("_BaseColor", color);
+                block.SetColor("_Color", color);
+                r.SetPropertyBlock(block);
+            }
         }
 
         go.transform.rotation = Quaternion.LookRotation(direction);

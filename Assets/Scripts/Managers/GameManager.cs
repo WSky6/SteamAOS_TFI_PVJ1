@@ -29,6 +29,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int totalEnemies;
     [SerializeField] private int enemiesRemaining;
 
+    private const string MenuSceneName = "MainMenu";
+
     public event Action<GameState> OnChangeState;
     public event Action<int> OnEnemyChange;
 
@@ -75,7 +77,7 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 1f;
 
-        if (scene.name == "MenuPrincipal")
+        if (scene.name == MenuSceneName)
         {
             ChangeState(GameState.Start);
         }
@@ -89,22 +91,13 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        enemiesRemaining = totalEnemies ;
-
-        OnEnemyChange?.Invoke(enemiesRemaining);
-        ChangeState(GameState.Playing);
-
         OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
     }
 
     private void OnPausePerformed(InputAction.CallbackContext context)
     {
-        Debug.Log("PAUSA: tecla detectada");
-        Debug.Log("Estado actual: " + currentState);
-
+        if (IsMenuScene()) return;
         Paused();
-
-        Debug.Log("Estado posterior: " + currentState);
     }
 
     public void ChangeState(GameState newState)
@@ -145,6 +138,8 @@ public class GameManager : MonoBehaviour
 
     public void Paused()
     {
+        if (IsMenuScene()) return;
+
         if (currentState == GameState.Playing)
         {
             ChangeState(GameState.Paused);
@@ -153,6 +148,11 @@ public class GameManager : MonoBehaviour
         {
             ChangeState(GameState.Playing);
         }
+    }
+
+    private bool IsMenuScene()
+    {
+        return SceneManager.GetActiveScene().name == MenuSceneName;
     }
 
     public void NotifyPlayerDead()
