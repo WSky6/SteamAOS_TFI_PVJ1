@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6660408235763398922
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7966625400521336439}
+  - component: {fileID: 7519717136370780620}
+  - component: {fileID: 7190101644426335049}
+  - component: {fileID: 9017578871791305845}
+  - component: {fileID: 5342391612772327243}
+  - component: {fileID: 12773533005876969}
+  m_Layer: 0
+  m_Name: LogicaTienda
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7966625400521336439
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6660408235763398922}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 77.08376, y: 24.84787, z: 93.14642}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7519717136370780620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6660408235763398922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4219fb32c2bfc141bb3b625a6d95df2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Juego.Tienda.AplicadorMejoras
+  estadisticasJugador: {fileID: 11400000, guid: d9c6405e5ef869c49ad10e980d827fcb, type: 2}
+  datosArma: {fileID: 11400000, guid: 4cda2ad4e3af472b94ac93740a16e8f4, type: 2}
+  ajustarVelocidadCarrera: 1
+--- !u!114 &7190101644426335049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6660408235763398922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7d66d0b18a6b6c4cad36dd7f8d2222d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Juego.Tienda.ValidadorCompra
+  aplicadorMejoras: {fileID: 7519717136370780620}
+--- !u!114 &9017578871791305845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6660408235763398922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81e1e34a1f6ade844a3d564cdbf8d924, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Juego.Tienda.ControladorTienda
+  validadorCompra: {fileID: 7190101644426335049}
+  panelTienda: {fileID: 0}
+  articulosDisponibles:
+  - {fileID: 11400000, guid: e3a5a7b23b9a2e044a1187b77ea999a5, type: 2}
+  - {fileID: 11400000, guid: 5b54aa6d5cbf2844a9712cebf81d2325, type: 2}
+  - {fileID: 11400000, guid: 337c7b5679e3bc4469e283e62c8a7311, type: 2}
+--- !u!114 &5342391612772327243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6660408235763398922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 578eef0e9ba7c544995742a8d483ad6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Juego.Tienda.VerificadorPersistenciaNivel
+  estadisticasJugador: {fileID: 11400000, guid: d9c6405e5ef869c49ad10e980d827fcb, type: 2}
+  datosArma: {fileID: 11400000, guid: 4cda2ad4e3af472b94ac93740a16e8f4, type: 2}
+--- !u!114 &12773533005876969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6660408235763398922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3742784136f6eb749bdced5a3d27f7e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Juego.Tienda.DiagnosticoFlujoTienda
+  controladorTienda: {fileID: 9017578871791305845}
+  estadisticasJugador: {fileID: 11400000, guid: d9c6405e5ef869c49ad10e980d827fcb, type: 2}
+  datosArma: {fileID: 11400000, guid: 4cda2ad4e3af472b94ac93740a16e8f4, type: 2}
+  registrarAlCargarEscena: 1
+  comprobarReferenciasEnStart: 1
